@@ -1,0 +1,45 @@
+DotCom()
+	declare locationCells to hold dot locations
+	declare name for dot
+	assign dot name in constructor
+	declare a setLocationCells() method to set dot location cells
+	declare a checkSelf() method to check user guess
+
+GameHelper()
+	declare a placeDotCom() method to return randomly generated location cells for a dot
+	declare userInput() method to return user input
+
+DotComBust()
+	declare a setUpGame() method to 
+		make dot objects
+		place them into dotComsList
+		assign their location cells 
+			calling DotCom.setLocationCells 
+			using GameHelper.placeDotCom() return value
+
+	declare a startPlaying() method to
+		get user input with GameHelper.userInput()
+		check if any dots are hit calling checkUserGuess()
+		finish the game calling finishGame() method
+
+	declare checkUserGuess() method to
+		increment numOfGuesses
+		check if any dot is hit calling DotCom.checkSelf()
+		if a dot is dead
+			remove it from dotComsList
+			announce the fuck out of it very loud
+		
+	declare a finishGame() method to
+		display a "game over" message
+		if number of guesses is small
+			congratulate
+		else
+			insult
+	declare a main() method to
+		instantiate a DotComBust object named game, then
+			call a setUpGame() method
+			call a startPlaying() method
+
+
+	
+
