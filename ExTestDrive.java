@@ -6,20 +6,23 @@ public class ExTestDrive {
 	public static void main(String[] args) {
 
 		String test = args[0];
-		System.out.print("t");
+
 		try {
-		
+			
+			System.out.print("t");
 			doRisky(test);
+			System.out.print("o");
 		}
 		catch (MyEx e) {
 			
-			
+			System.out.print("a");		
 		}
 		finally {
 
 				System.out.print("w");
-				System.out.print("s");
 		}
+
+		System.out.print("s");
 	}
 
 	static void doRisky(String t) throws MyEx {
@@ -27,12 +30,10 @@ public class ExTestDrive {
 		System.out.print("h");
 		if("yes".equals(t)) {
 
-			System.out.print("a");
 			throw new MyEx();
 		} 
 			
 		System.out.print("r");
-		System.out.print("o");
 
 	} // doRisky
 } //class
