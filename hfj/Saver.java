@@ -20,3 +20,6 @@ class Saver implements Serializable {
 class Test implements Serializable {
 	private String testStr = "test";
 }
+
+class Loader {
+	ObjectInputStream os = new ObjectInputStream(new FileInputStream("file.ser");
