@@ -8,6 +8,9 @@ public class NameGuess
 	public static void main(String[] args)
 	{
 		boolean end = false;
+		int guessCount = 0;
+		String lastWords = " guesses though.";
+
 		Cat pp = new Cat();
 		Owner dude = new Owner("Boris");		
 	
@@ -15,14 +18,17 @@ public class NameGuess
 		
 		while (end != true)
 		{
+			
 			if (dude.getGuess() != pp.getName())
 			{
+				guessCount++;
 				dude.setGuess();
 				out.println(dude.getName() + ": " + dude.getGuess() + "!");
 			}
 			else
 			{
-				out.println(pp.getName() + ": " + "Meow ^^");
+				if(guessCount == 1) {lastWords = " guess!";}
+				out.println(pp.getName() + ": " + "Meow ^^ " + guessCount + lastWords);
 				end = true;
 			}
 		}
