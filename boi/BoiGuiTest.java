@@ -3,47 +3,36 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class BOIv1 {
+public class BoiGuiTest {
 	
 	ArrayList<Integer> shipList = new ArrayList<Integer>();
 	
 	public static void main(String[] args) {
-		BOIv1 a = new BOIv1();	
+		BoiGuiTest a = new BoiGuiTest();
 		a.initGame();
 		a.makeGui();
 	}
 
-	//generating 1x4, 2x3, 3x2, 4x1 ships
 	public void initGame() {
-		boolean startOver = true;
-		
-		while(startOver) {
-			shipList.clear();
-			for(int i = 4; i > 0; i--) {
-				for(int j = 5 - i; j > 0; j--) {
-					startOver = makeShip(i);
-					if(startOver) {break;}
-				}
-				if(startOver) {break;}
+		for(int i = 4; i > 0; i--) {
+			for(int j = 5 - i; j > 0; j--) {
+				makeShip(i);
 			}
-		}//while
-	}//method
-	
-	//making a ship of size i and adding it to shipList
-	public boolean makeShip(int size) {
+		}
+	}
+
+	public void makeShip(int size) {
 
 		boolean success = false;
-		boolean failure = false;
-		boolean deadend = false;
+		boolean finished = false;
 		int vH = 0;			//ship orientation: 1 if vertical, 0 if horizontal
 		int x = 0;
 		int y = 0;
 		int shipX;
 		int shipY;
 		int xyToN;
-		int count = 0;
 
-		while(!success) {
+		while(!success) {	
 			vH = (int)(Math.random()*2);
 			x = (int)(Math.random()*(10-(size-1)*(1-vH)));
 			y = (int)(Math.random()*(10-(size-1)*vH));
@@ -52,38 +41,44 @@ public class BOIv1 {
 				for(int i = 0; i < size; i++) {
 					xyToN = (y+i*vH)*10+(x+i*(1-vH));
 					shipList.add(xyToN);
-//					System.out.println("ship at " + xyToN);
+					System.out.println("ship at " + xyToN);
 				}
 				success = true;
+				finished = true;
 			} else {
 				for(int ship: shipList) {
 					shipX = ship % 10;
 					shipY = (int)(Math.abs(ship/10));
 					if( ((shipX >= x-1) && (shipX <= x+1+(size-1)*(1-vH)) ) && ( (shipY >= y-1) && (shipY <= y+1+(size-1)*vH) ) ) {		
-						failure = true;//generate again
-					}
-				}//for
+					} else {
+						success = true;
+					}	
+				}
 				
-				if(!failure) {
-					for(int i = 0; i < size; i++) {
-						xyToN = (y+i*vH)*10+(x+i*(1-vH));
-						shipList.add(xyToN);
-//						System.out.println("ship at " + xyToN);
-					}
-					success = true;
-				}//if
-			}//else
-			
-			if(count++ == 200) {
-				deadend = true;
-//				System.out.println("reached deadend");
-				break;
 			}
 		}//while
-		return deadend;
+		
+		if(!finished) {
+			for(int i = 0; i < size; i++) {
+				xyToN = (y+i*vH)*10+(x+i*(1-vH));
+				shipList.add(xyToN);
+				System.out.println("ship at " + xyToN);
+			}
+			finished = true;
+		}
+
 	}//method
 
 	public void makeGui() {
+
+//test
+//		shipList.add(23);
+//		shipList.add(24);
+//		shipList.add(25);
+
+//		shipList.add(66);
+//		shipList.add(67);
+
 		JFrame f = new JFrame("BOI!");
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setSize(600,600);
@@ -103,6 +98,7 @@ public class BOIv1 {
 			for(int ship: shipList) {
 				if(i == ship) {
 					field.isShip();
+					System.out.println("Tile " + i + " is a ship");
 				}
 			}
 			field.addActionListener(tlistener);
@@ -111,17 +107,18 @@ public class BOIv1 {
 
 		f.getContentPane().add(BorderLayout.CENTER, background);
 		f.setVisible(true);
-	}//method
+	}
 
 	class TileListener implements ActionListener {
 		public void actionPerformed(ActionEvent event) {
 			Tile b = (Tile)(event.getSource());
 			if(b.isChecked == false) {
+				if(b.isShip) {System.out.println("hit");}
 				b.isChecked();
 				b.repaint();
 			}
 		}
-	}//inner
+	}
 
 	
 	class Background extends JPanel {
@@ -130,7 +127,7 @@ public class BOIv1 {
 			g2d.setColor(Color.BLACK);
 			g2d.fillRect(0,0, this.getWidth(), this.getHeight());
 		}
-	}//inner
+	}
 
 	class Tile extends JButton {
 		boolean isShip = false;
@@ -157,7 +154,7 @@ public class BOIv1 {
 					g2d.setColor(Color.GRAY);
 					g2d.fillRect(0,0, this.getWidth(), this.getHeight());
 				}
-			}//else
+			}
 		}//paint
 	}//inner
 }//outer

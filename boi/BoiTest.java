@@ -3,17 +3,19 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class BOIv1 {
+public class BoiTest {
 	
 	ArrayList<Integer> shipList = new ArrayList<Integer>();
 	
 	public static void main(String[] args) {
-		BOIv1 a = new BOIv1();	
+		BoiTest a = new BoiTest();
+		
+	
 		a.initGame();
+
 		a.makeGui();
 	}
 
-	//generating 1x4, 2x3, 3x2, 4x1 ships
 	public void initGame() {
 		boolean startOver = true;
 		
@@ -26,10 +28,9 @@ public class BOIv1 {
 				}
 				if(startOver) {break;}
 			}
-		}//while
-	}//method
-	
-	//making a ship of size i and adding it to shipList
+		}
+	}
+
 	public boolean makeShip(int size) {
 
 		boolean success = false;
@@ -53,7 +54,7 @@ public class BOIv1 {
 					xyToN = (y+i*vH)*10+(x+i*(1-vH));
 					shipList.add(xyToN);
 //					System.out.println("ship at " + xyToN);
-				}
+				}//for
 				success = true;
 			} else {
 				for(int ship: shipList) {
@@ -61,7 +62,7 @@ public class BOIv1 {
 					shipY = (int)(Math.abs(ship/10));
 					if( ((shipX >= x-1) && (shipX <= x+1+(size-1)*(1-vH)) ) && ( (shipY >= y-1) && (shipY <= y+1+(size-1)*vH) ) ) {		
 						failure = true;//generate again
-					}
+					}//if
 				}//for
 				
 				if(!failure) {
@@ -69,7 +70,7 @@ public class BOIv1 {
 						xyToN = (y+i*vH)*10+(x+i*(1-vH));
 						shipList.add(xyToN);
 //						System.out.println("ship at " + xyToN);
-					}
+					}//for
 					success = true;
 				}//if
 			}//else
@@ -84,6 +85,15 @@ public class BOIv1 {
 	}//method
 
 	public void makeGui() {
+
+//test
+//		shipList.add(23);
+//		shipList.add(24);
+//		shipList.add(25);
+
+//		shipList.add(66);
+//		shipList.add(67);
+
 		JFrame f = new JFrame("BOI!");
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setSize(600,600);
@@ -103,6 +113,7 @@ public class BOIv1 {
 			for(int ship: shipList) {
 				if(i == ship) {
 					field.isShip();
+//					System.out.println("Tile " + i + " is a ship");
 				}
 			}
 			field.addActionListener(tlistener);
@@ -111,17 +122,18 @@ public class BOIv1 {
 
 		f.getContentPane().add(BorderLayout.CENTER, background);
 		f.setVisible(true);
-	}//method
+	}
 
 	class TileListener implements ActionListener {
 		public void actionPerformed(ActionEvent event) {
 			Tile b = (Tile)(event.getSource());
 			if(b.isChecked == false) {
+//				if(b.isShip) {System.out.println("hit");}
 				b.isChecked();
 				b.repaint();
 			}
 		}
-	}//inner
+	}
 
 	
 	class Background extends JPanel {
@@ -130,7 +142,7 @@ public class BOIv1 {
 			g2d.setColor(Color.BLACK);
 			g2d.fillRect(0,0, this.getWidth(), this.getHeight());
 		}
-	}//inner
+	}
 
 	class Tile extends JButton {
 		boolean isShip = false;
@@ -157,7 +169,7 @@ public class BOIv1 {
 					g2d.setColor(Color.GRAY);
 					g2d.fillRect(0,0, this.getWidth(), this.getHeight());
 				}
-			}//else
+			}
 		}//paint
 	}//inner
 }//outer
