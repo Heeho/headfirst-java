@@ -14,16 +14,14 @@ import java.awt.event.*;
 
 public class BOI {
 	
-	ArrayList<Integer> shipList = new ArrayList<Integer>();
-	
 	public static void main(String[] args) {
 		BOI a = new BOI();	
-		a.initGame();
-		a.makeGui();
+		a.makeGui(a.initGame());
 	}
-
+	
 	//generating 1x4, 2x3, 3x2, 4x1 ships
-	public void initGame() {
+	public static boolean[x, y] genMap(int x, int y) {
+		boolean[,] map;
 		boolean startOver = true;
 		
 		while(startOver) {
@@ -37,62 +35,8 @@ public class BOI {
 			}
 		}//while
 	}//method
-	
-	//making a ship of size i and adding it to shipList
-	public boolean makeShip(int size) {
 
-		boolean success = false;
-		boolean failure = false;
-		boolean deadend = false;
-		int vH = 0;			//ship orientation: 1 if vertical, 0 if horizontal
-		int x = 0;
-		int y = 0;
-		int shipX;
-		int shipY;
-		int xyToN;
-		int count = 0;
-
-		while(!success) {
-			vH = (int)(Math.random()*2);
-			x = (int)(Math.random()*(10-(size-1)*(1-vH)));
-			y = (int)(Math.random()*(10-(size-1)*vH));
-	
-			if(shipList.isEmpty()) {
-				for(int i = 0; i < size; i++) {
-					xyToN = (y+i*vH)*10+(x+i*(1-vH));
-					shipList.add(xyToN);
-//					System.out.println("ship at " + xyToN);
-				}
-				success = true;
-			} else {
-				for(int ship: shipList) {
-					shipX = ship % 10;
-					shipY = (int)(Math.abs(ship/10));
-					if( ((shipX >= x-1) && (shipX <= x+1+(size-1)*(1-vH)) ) && ( (shipY >= y-1) && (shipY <= y+1+(size-1)*vH) ) ) {		
-						failure = true;//generate again
-					}
-				}//for
-				
-				if(!failure) {
-					for(int i = 0; i < size; i++) {
-						xyToN = (y+i*vH)*10+(x+i*(1-vH));
-						shipList.add(xyToN);
-//						System.out.println("ship at " + xyToN);
-					}
-					success = true;
-				}//if
-			}//else
-			
-			if(count++ == 200) {
-				deadend = true;
-//				System.out.println("reached deadend");
-				break;
-			}
-		}//while
-		return deadend;
-	}//method
-
-	public void makeGui() {
+	public void makeGui(ArrayList<Ship> shipList) {
 		JFrame f = new JFrame("BOI!");
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setSize(600,600);
@@ -106,17 +50,20 @@ public class BOI {
 		background.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		background.setLayout(grid);
 
-		TileListener tlistener = new TileListener();
-		for(int i = 0; i < 100; i++) {
-			Tile field = new Tile();
-			for(int ship: shipList) {
-				if(i == ship) {
-					field.isShip();
+		TileListener tl = new TileListener();
+		
+		for(int i = 0; i < 10; i++) {
+			for(int j = 0; j < 10; j++) {
+				Tile field = new Tile(i, j);
+				for(Ship ship: shipList) {
+					if(ship.isIn(field)) {
+						field.isShip();
+					}
 				}
-			}
-			field.addActionListener(tlistener);
-			background.add(field);
-		}
+				field.addActionListener(tl);
+				background.add(field);
+			}//j
+		}//i
 
 		f.getContentPane().add(BorderLayout.CENTER, background);
 		f.setVisible(true);
@@ -132,7 +79,6 @@ public class BOI {
 		}
 	}//inner
 
-	
 	class Background extends JPanel {
 		public void paintComponent(Graphics g) {
 			Graphics2D g2d = (Graphics2D) g;
@@ -170,3 +116,65 @@ public class BOI {
 		}//paint
 	}//inner
 }//outer
+
+class Rand {
+	
+	private void placeShip(int vH, int size, int x, int y) {
+		shipList.add(new Ship(vH, size, x, y));
+		success = true;
+//		System.out.println(String.format("vH = %d ship of size %d at (%d, %d)", vH, size, x, y);
+	}
+	
+	public boolean makeShip(int size) {
+
+		boolean success = false;
+		boolean failure = false;
+		boolean deadend = false;
+		int vH = 0;			//ship orientation: 1 if vertical, 0 if horizontal
+		int x = 0;
+		int y = 0;
+		int count = 0;
+
+		while(!success) {
+			vH = (int)(Math.random()*2);
+			x = (int)(Math.random()*(10-(size-1)*(1-vH)));
+			y = (int)(Math.random()*(10-(size-1)*vH));
+	
+			if(shipList.isEmpty()) {
+				placeShip(vH, size, x, y);
+			} else {
+				for(Ship ship: shipList) {
+					if( ((ship.getX() >= x-1) && (ship.getX() <= x+1+(size-1)*(1-vH)) ) && ( (ship.getY() >= y-1) && (ship.getY() <= y+1+(size-1)*vH) ) ) {		
+						failure = true;//generate ship anew
+					}//if
+				}//for
+				
+				if(!failure) {
+					placeShip();
+				}//if
+			}//else
+			
+			if(count++ == 200) {
+				deadend = true;
+//				System.out.println("reached deadend");
+				break;
+			}
+		}//while
+		return deadend;
+	}//method
+}
+
+class Ship {
+	ArrayList<Integer> cells = new ArrayList<Integer>();
+	
+	public Ship(int vH, int size, int startX, int startY) {
+		for(int i = 0; i < size; i++) {
+			cells.add();
+		}
+	}
+	
+	public boolean isIn(Tile t) {
+		for(cell: cells)
+		if(t.getX() t.getY() )
+	}
+}
