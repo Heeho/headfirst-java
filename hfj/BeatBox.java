@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
+import java.io.*;
 
 public class BeatBox {
 	JPanel mainPanel;
@@ -35,16 +36,24 @@ public class BeatBox {
 		buttonBox.add(start);
 
 		JButton stop = new JButton("Stop");
-		start.addActionListener(new MyStopListener());
+		stop.addActionListener(new MyStopListener());
 		buttonBox.add(stop);
 
 		JButton tempoUp = new JButton("Tempo Up");
-		start.addActionListener(new MyTempoUpListener());
+		tempoUp.addActionListener(new MyTempoUpListener());
 		buttonBox.add(tempoUp);
 
 		JButton tempoDown = new JButton("Tempo Down");
-		start.addActionListener(new MyTempoDownListener());
+		tempoDown.addActionListener(new MyTempoDownListener());
 		buttonBox.add(tempoDown);
+
+		JButton serializeIt = new JButton("Serialize It");
+		serializeIt.addActionListener(new MySendListener());
+		buttonBox.add(serializeIt);
+
+		JButton restore = new JButton("Restore");
+		restore.addActionListener(new MyReadInListener());
+		buttonBox.add(restore);
 
 		Box nameBox = new Box(BoxLayout.Y_AXIS);
 		for (int i = 0; i < 16; i++) {
@@ -149,6 +158,60 @@ public class BeatBox {
 			sequencer.setTempoFactor((float)(tempoFactor * 0.97));
 		}
 	}//inner
+
+	public class MySendListener implements ActionListener {
+		public void actionPerformed(ActionEvent a) {
+			JFileChooser fileSave = new JFileChooser();
+			fileSave.showSaveDialog(theFrame);
+			saveFile(fileSave.getSelectedFile());
+		}
+	}
+
+	private void saveFile(File file) {		
+		boolean[] checkboxState = new boolean[256];
+		for(int i = 0; i < 256; i++) {
+			JCheckBox check = (JCheckBox) checkboxList.get(i);
+			if(check.isSelected()) {
+				checkboxState[i] = true;
+			}
+		}
+		try {
+			FileOutputStream fileStream = new FileOutputStream(file);
+			ObjectOutputStream os = new ObjectOutputStream(fileStream);
+			os.writeObject(checkboxState);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	public class MyReadInListener implements ActionListener {
+		public void actionPerformed(ActionEvent a) {
+			JFileChooser fileOpen = new JFileChooser();
+			fileOpen.showOpenDialog(theFrame);
+			loadFile(fileOpen.getSelectedFile());
+		}
+	}
+
+	public void loadFile (File file) {
+		boolean[] checkboxState = null;
+		try {
+			FileInputStream fileIn = new FileInputStream(file);
+			ObjectInputStream is = new ObjectInputStream(fileIn);
+			checkboxState = (boolean[]) is.readObject();
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+			for(int i = 0; i < 256; i++) {
+			JCheckBox check = (JCheckBox) checkboxList.get(i);
+			if(checkboxState[i]) {
+				check.setSelected(true);
+			} else {
+				check.setSelected(false);
+			}
+		}
+		sequencer.stop();
+		buildTrackAndStart();
+	}
 
 	public void makeTracks(int[] list) {
 		for(int i = 0; i < 16; i++) {

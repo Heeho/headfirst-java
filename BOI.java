@@ -19,12 +19,10 @@ public class BOI {
 	static boolean gameInactive;
 	static int guessCount;
 
-	ArrayList<Integer> highScore = new ArrayList<Integer>();
-
 	public static void main(String[] args) {
 		BOI game = new BOI();
 		game.setUpGame();
-		game.makeGui();
+		game.go();
 	}
 
 	public void setUpGame() {
@@ -32,7 +30,7 @@ public class BOI {
 		shipList = Generator.getShipList();
 	}
 
-	public void makeGui() {
+	public void go() {
 		JFrame f;
 		f = new JFrame("BOI!");
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -94,19 +92,6 @@ public class BOI {
 		}
 		
 	}
-	
-	public void lineReader(String file) {
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
-			String line = null;
-			while((line = reader.readLine()) != null) {
-				System.out.println(line);
-			} 
-			reader.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	public void lineWriter(String line, String file) {
 		try {
@@ -122,9 +107,25 @@ public class BOI {
 
 	public class highScoresListener implements ActionListener {
 		public void actionPerformed(ActionEvent event) {
-			lineReader("highscore.txt");
+			
+			getHighscore("highscore.txt");
 		}//method
 	}//inner
+
+	public ArrayList<String> getHighscore(String file) {
+		ArrayList<String> highScore;
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
+			String line = null;
+			while((line = reader.readLine()) != null) {
+				highScore.add(line);
+			} 
+			reader.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 
 	class Background extends JPanel {
 		public void paintComponent(Graphics g) {
