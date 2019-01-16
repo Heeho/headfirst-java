@@ -14,25 +14,93 @@ public class BOI {
 	static final int MAP_X = 10;
 	static final int MAP_Y = 10;
 	static final int SHIP_N = 4;
-	static ArrayList<Ship> shipList;
-	static ArrayList<Tile> tileList;
-	static boolean gameInactive;
-	static int guessCount;
+	
+	ArrayList<Ship> shipList;
+	ArrayList<Tile> tileList;
+	HighScore highScore;
+
+	boolean gameInactive;
+	int guessCount;
+
+	JFrame f = new JFrame("BOI!");
 
 	public static void main(String[] args) {
 		BOI game = new BOI();
-		game.setUpGame();
+		game.makeMap(MAP_X, MAP_Y, SHIP_N);
 		game.go();
+
+//		try {
+//			Runtime.getRuntime().addShutdownHook(new highScore());
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
-	public void setUpGame() {
-		Generator.makeMap(MAP_X, MAP_Y, SHIP_N);
-		shipList = Generator.getShipList();
-	}
+	private void makeMap(int mapX, int mapY, int n) {		//generates 1xN, 2x(N-1),.. , Nx1 ships on (MAP_X, MAP_Y) map
+		shipList = new ArrayList<Ship>();
+		boolean startAnew = true;
+
+		while(startAnew) {
+			shipList.clear();
+			outerloop:	
+			for(int i = n; i > 0; i--) {							//iterates through ship size
+				for(int j = i - 1; j < n; j++) {					//iterates through number of ships
+					startAnew = placeShip(mapX, mapY, i);
+					if(startAnew) {break outerloop;}
+				}
+			}
+		}
+
+		System.out.println("Generator.MakeMap() successful.");
+	}//method
+
+	private boolean placeShip(int mapX, int mapY, int size) {
+
+		boolean placed = false;
+		boolean spare = true;
+		boolean failure = false;
+
+		int vH = 0;					//ship orientation, 1 for vertical, 0 for horisontal
+		int startX = 0;
+		int startY = 0;
+
+		int loopCount = 0;
+		int failureCount = 0;
+
+		while(!placed) {
+			vH = (int)(Math.random()*2);	
+			startX = (int)(Math.random()*(mapX-(size-1)*(1-vH)));
+			startY = (int)(Math.random()*(mapY-(size-1)*vH));
+
+			if(shipList.isEmpty() == false) {
+				outerloop:
+				for(Ship ship: shipList) {
+					for(Point cell: ship.cells) {
+						if( ( (cell.getX() >= startX-1) && (cell.getX() <= startX+1+(size-1)*(1-vH)) ) && ( (cell.getY() >= startY-1) && (cell.getY() <= startY+1+(size-1)*vH) ) ) {		
+							spare = false;			//generate ship anew
+							break outerloop;
+						}
+					}//for cell
+				}//for ship
+			}
+
+			if(spare) {
+				shipList.add(new Ship(vH, size, startX, startY));
+				placed = true;
+			}
+			
+			if(loopCount++ > (BOI.MAP_X * BOI.MAP_Y * 2)) {
+				failure = true;
+				System.out.println(String.format("\nGENERATION FAILED at %d loop of %d attempt, starting anew..\n", loopCount, ++failureCount));
+				break;
+			}
+		}//while
+		return failure;
+	}//method
 
 	public void go() {
-		JFrame f;
-		f = new JFrame("BOI!");
+		highScore = new HighScore();
+//		JFrame f = new JFrame("BOI!");
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setSize(600,600);
 		f.setLocationRelativeTo(null);
@@ -52,13 +120,13 @@ public class BOI {
 		f.getContentPane().add(BorderLayout.CENTER, background);
 		JMenuBar menuBar = new JMenuBar();
 		JMenuItem restartMenuItem = new JMenuItem("Restart");
-		JMenuItem highScoresMenuItem = new JMenuItem("High Scores");
+		JMenuItem highScoreMenuItem = new JMenuItem("High Scores");
 
 		restartMenuItem.addActionListener(new RestartListener());
-		highScoresMenuItem.addActionListener(new highScoresListener());
+		highScoreMenuItem.addActionListener(new highScoreListener());
 
 		menuBar.add(restartMenuItem);
-		menuBar.add(highScoresMenuItem);
+		menuBar.add(highScoreMenuItem);
 
 		f.setJMenuBar(menuBar);
 
@@ -85,47 +153,21 @@ public class BOI {
 
 	public void finishGame() {
 		gameInactive = true;
-		highScore.add(guessCount);	
-		System.out.println(String.format("GameOver! It took you %d guesses.", guessCount));
+
 		for(Tile tile: tileList) {
 			tile.open();
 		}
-		
+		System.out.println(String.format("GameOver! It took you %d guesses.\n", guessCount));
+
+		highScore.add(guessCount);
+		highScore.show(guessCount);
 	}
 
-	public void lineWriter(String line, String file) {
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(file)));
-			for(int score: highScore) {
-				writer.write(score + "\n");
-			}
-			writer.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public class highScoresListener implements ActionListener {
+	public class highScoreListener implements ActionListener {
 		public void actionPerformed(ActionEvent event) {
-			
-			getHighscore("highscore.txt");
+			highScore.show(guessCount);
 		}//method
 	}//inner
-
-	public ArrayList<String> getHighscore(String file) {
-		ArrayList<String> highScore;
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
-			String line = null;
-			while((line = reader.readLine()) != null) {
-				highScore.add(line);
-			} 
-			reader.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 
 	class Background extends JPanel {
 		public void paintComponent(Graphics g) {
@@ -133,7 +175,6 @@ public class BOI {
 			g2d.setColor(Color.BLACK);
 			g2d.fillRect(0,0, this.getWidth(), this.getHeight());
 		}
-	}//inner
 
 	public class Tile extends JPanel {
 		boolean isChecked;
@@ -187,8 +228,7 @@ public class BOI {
 		public void actionPerformed(ActionEvent event) {
 			gameInactive = true;
 			guessCount = 0;
-			Generator.makeMap(MAP_X, MAP_Y, SHIP_N);
-			shipList = Generator.getShipList();
+			makeMap(MAP_X, MAP_Y, SHIP_N);
 			for (Tile tile: tileList) {
 				tile.reset();
 				for(Ship ship: shipList) {
@@ -196,14 +236,14 @@ public class BOI {
 						tile.hasShip();
 						break;
 					}
-				}//for ship
-			}//for tile
+				}
+			}
 			gameInactive = false;
-		}//method
+		}//listener
 	}//class
 
 	public class GuessListener extends MouseAdapter implements MouseListener {
-		public void mouseReleased(MouseEvent event) {
+		public void mouseClicked(MouseEvent event) {
 			String result = "miss";
 			if(!gameInactive) {
 				Tile t = (Tile)(event.getSource());
@@ -263,75 +303,66 @@ class Ship {
 	}//method
 }
 
-final class Generator {				
-	private static ArrayList<Ship> shipList = new ArrayList<Ship>();
-	private static int failureCount = 0;
+class HighScore 
+{//extends Thread {
+	private static ArrayList<Integer> highScoreList = new ArrayList<Integer>();
+	private File file = new File("highscore.txt");
+	private int highScoreDepth = 7;
+	private int lastScore;
 
-	private Generator() { }
-
-	public static ArrayList<Ship> getShipList() {
-		return shipList;
+	public HighScore() {
+		load();
 	}
 
-	public static void makeMap(int mapX, int mapY, int n) {		//generates 1xN, 2x(N-1),.. , Nx1 ships on (MAP_X, MAP_Y) map
-		failureCount = 0;
+	public void load() {
+		String line = null;
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			while((line = reader.readLine()) != null) {
+				highScoreList.add(Integer.parseInt(line));
+			} 
+			reader.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-		shipList.clear();
-		boolean startAnew = true;
-
-		while(startAnew) {
-			shipList.clear();
-			outerloop:	
-			for(int i = n; i > 0; i--) {							//iterates through ship size
-				for(int j = i - 1; j < n; j++) {					//iterates through number of ships
-					startAnew = placeShip(mapX, mapY, i);
-					if(startAnew) {break outerloop;}
-				}
-			}//for i
-		}//while
-		System.out.println("Generator.MakeMap() successful.");
-	}//method
-
-	public static boolean placeShip(int mapX, int mapY, int size) {
-
-		boolean placed = false;
-		boolean spare = true;
-		boolean failure = false;
-
-		int vH = 0;					//ship orientation, 1 for vertical, 0 for horisontal
-		int startX = 0;
-		int startY = 0;
-
-		int count = 0;
-
-		while(!placed) {
-			vH = (int)(Math.random()*2);	
-			startX = (int)(Math.random()*(mapX-(size-1)*(1-vH)));
-			startY = (int)(Math.random()*(mapY-(size-1)*vH));
-
-			if(shipList.isEmpty() == false) {
-				outerloop:
-				for(Ship ship: shipList) {
-					for(Point cell: ship.cells) {
-						if( ( (cell.getX() >= startX-1) && (cell.getX() <= startX+1+(size-1)*(1-vH)) ) && ( (cell.getY() >= startY-1) && (cell.getY() <= startY+1+(size-1)*vH) ) ) {		
-							spare = false;			//generate ship anew
-							break outerloop;
-						}
-					}//for cell
-				}//for ship
+	public void show(int guessCount) {
+		boolean found = false;
+		int i = 0;
+		String text = "\nHIGHSCORE:\n";
+		for(int score: highScoreList) {
+			text += String.format("\n%d. %d", ++i, score);
+			if((guessCount == score) && !found) {
+				text += " <<<YOU";
+				found = true;
 			}
+		}	
+		System.out.println(text);
+	}
 
-			if(spare) {
-				shipList.add(new Ship(vH, size, startX, startY));
-				placed = true;
+	public void add(int guessCount) {
+		highScoreList.add(guessCount);
+		Collections.sort(highScoreList);
+		if(highScoreList.size() > highScoreDepth) {
+			highScoreList.subList(highScoreDepth, highScoreList.size()).clear();
+		}
+		save();
+	}
+
+//	public void run() {
+//		save();
+//	}
+
+	public void save() {
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			for(int score: highScoreList) {
+				writer.write(score + "\n");
 			}
-			
-			if(count++ > (BOI.MAP_X * BOI.MAP_Y * 2)) {
-				failure = true;
-				System.out.println(String.format("\nGENERATION FAILED at %d step of attempt %d, starting anew..\n", count, ++failureCount));
-				break;
-			}
-		}//while
-		return failure;
-	}//method
-}//class
+			writer.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
