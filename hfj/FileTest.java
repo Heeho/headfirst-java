@@ -17,9 +17,9 @@ public class FileTest {
 				String [] dirContents = dir.list();
 				for(int i = 0; i < dirContents.length; i++) {
 					System.out.println(dir + " contains:");
-					System.out.println(dirContents[i] + " that contains:");
 					readableFile = new File(dir, dirContents[i]);
 					if(!readableFile.isDirectory()) {
+						System.out.println(dirContents[i] + " that contains:");
 						reader = new BufferedReader(new FileReader(readableFile));
 						while( ((line = reader.readLine()) != null) && (!readableFile.isDirectory()) ) {
 							System.out.println(line);
