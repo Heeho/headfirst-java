@@ -33,10 +33,7 @@ public class Map implements Runnable {
 			
 				y0 = p1.loc.getY() - f.getHeight()/2;
 				y1 = p1.loc.getY() + f.getHeight()/2;
-				//gotta move above calcs to Player class
-				//or pass current loc to Map as well
-				//everything that uses instance vars 
-				//should go to respective class
+				//gotta make a reference to Player obj in Map
 				
 				if(
 				((tree.getX() > x0) && (tree.getX() > x0))
