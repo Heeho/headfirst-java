@@ -78,6 +78,27 @@ public class ScrollGame implements Runnable {
 			}//for
 		}//while
 	}
+	
+class PlayerGUI extends JPanel {
+	private int viewSize;
+	private int picSize = 20;
+	private Color color = Color.BLACK;
+
+	public PlayerGUI(int view) {
+		viewSize = view;
+	}
+
+	public void paintComponent(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g;
+
+		g2d.setColor(color);
+		g2d.fillRect(viewSize/2 - picSize/2, viewSize/2 - picSize/2, picSize, picSize);
+		this.getToolkit().sync();
+	}
+
+	//Might insert some Listeners for player character interaction
+
+}//inner
 
 	class Tree extends JPanel implements Runnable {
 		private int size = 21;
@@ -103,6 +124,7 @@ public class ScrollGame implements Runnable {
 //			this.setLocation(x, y);
 //		}
 
+		//remake into timer, has to throw events for EDT
 		public void run() {
 			int x, y;
 			while(true) {
@@ -130,27 +152,6 @@ public class ScrollGame implements Runnable {
 	class MapBorder extends JPanel {}
 
 }//scrollgame
-
-class PlayerGUI extends JPanel {
-	private int viewSize;
-	private int picSize = 20;
-	private Color color = Color.BLACK;
-
-	public PlayerGUI(int view) {
-		viewSize = view;
-	}
-
-	public void paintComponent(Graphics g) {
-		Graphics2D g2d = (Graphics2D) g;
-
-		g2d.setColor(color);
-		g2d.fillRect(viewSize/2 - picSize/2, viewSize/2 - picSize/2, picSize, picSize);
-		this.getToolkit().sync();
-	}
-
-	//Might insert some Listeners for player character interaction
-
-}
 
 class Map implements Runnable {
 	private Point 	playerLocation, 
@@ -212,6 +213,7 @@ class Map implements Runnable {
 		return treeLocations;
 	}
 
+	//remake into timer
 	public void run() {	
 		System.out.println("walker starts");
 		while(true) {
