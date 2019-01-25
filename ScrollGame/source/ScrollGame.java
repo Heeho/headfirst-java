@@ -65,6 +65,7 @@ public class ScrollGame implements Runnable {
 
 	public void run () {	//check objects to add to view
 		while(true) {
+			//make Things array, instantiate if in view
 			for(Point loc: m.getTreeLocations()) {
 				if(loc.distance(m.getPlayerLocation()) < VIEW_SIZE/2) {
 					if(!(treeLocationsInView.contains(loc))) {
@@ -78,7 +79,7 @@ public class ScrollGame implements Runnable {
 			}//for
 		}//while
 	}
-	
+//make Things superclass for game objects
 class PlayerGUI extends JPanel {
 	private int viewSize;
 	private int picSize = 20;
@@ -111,9 +112,7 @@ class PlayerGUI extends JPanel {
 			this.setSize(screen.getPreferredSize());
 			this.setOpaque(false);
 			screen.add(this, 0);
-			f.revalidate();
-			f.repaint();
-
+			
 			Thread rangeCheck = new Thread(this);
 			rangeCheck.start();
 		}
@@ -124,7 +123,8 @@ class PlayerGUI extends JPanel {
 //			this.setLocation(x, y);
 //		}
 
-		//remake into timer, has to throw events for EDT
+		//remake into Swing.Timer, so it throw events for EDT
+		//apply Bresenham algorithm
 		public void run() {
 			int x, y;
 			while(true) {
@@ -168,6 +168,7 @@ class Map implements Runnable {
 
 	private ArrayList<Point> treeLocations;	//all the trees
 
+	//generate Things and add to array instead of Points
 	public Map(int map, int view) {
 		mapSize = map;
 		viewSize = view;
@@ -213,7 +214,8 @@ class Map implements Runnable {
 		return treeLocations;
 	}
 
-	//remake into timer
+	//remake into util.Timer
+	//apply Bresenham algorithm
 	public void run() {	
 		System.out.println("walker starts");
 		while(true) {
