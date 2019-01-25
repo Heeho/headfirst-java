@@ -44,6 +44,7 @@ public class ScrollGame implements Runnable {
 		pg.setOpaque(false);
 		screen.add(pg, 2);
 
+		//just make a hashset of Things in view
 		treeLocationsInView = new HashSet<Point>();
 		treesInView = new HashSet<Tree>();
 
@@ -79,6 +80,7 @@ public class ScrollGame implements Runnable {
 			}//for
 		}//while
 	}
+	
 //make Things superclass for game objects
 class PlayerGUI extends JPanel {
 	private int viewSize;
@@ -115,13 +117,6 @@ class PlayerGUI extends JPanel {
 			
 			Thread rangeCheck = new Thread(this);
 			rangeCheck.start();
-		}
-
-//		private void calcLocation() {
-//			int x = (int) (VIEW_SIZE/2 - (m.getPlayerLocation().getX() - treeLocation.getX()));
-//			int y = (int) (VIEW_SIZE/2 - (m.getPlayerLocation().getY() - treeLocation.getY()));
-//			this.setLocation(x, y);
-//		}
 
 		//remake into Swing.Timer, so it throw events for EDT
 		//apply Bresenham algorithm
