@@ -11,18 +11,16 @@ class GUI {
 	int MAP_SIZE, VIEW_SIZE;
 	
 	int playerLoc, playerDest;
-	int[] thingsMap;
 	int[] thingsSet;
 	
 	public GUI() {
 		Map m = new Map(MAP_SIZE, VIEW_SIZE);
-		m.fillThingsMap(thingsMap);
 		
 		Timer t1 = new Timer();
 		TimerTask shower = new TimerTask() {
 			public void run() {
 				//uses thingsMap, playerLoc
-				for(int thg: thingsMap) {
+				for(int thg: m.thingsMap) {
 					if(true) {
 						thingsSet.add(thg);
 					} else {
@@ -37,7 +35,10 @@ class GUI {
 		TimerTask walker = new TimerTask() {
 			public void run() {
 				//uses playerLoc, playerDest
-				playerLoc.translate(dX, dY);			
+				playerLoc.translate(dX, dY);
+				for(Thing thg: thingsSet) {
+					thg.setLocation(-dX, -dY);
+				}
 			}
 		};
 		t2.shedule(walker, 0, 200);
@@ -50,20 +51,11 @@ class GUI {
 		}	
 	}
 	
-	class Thing /*extends JLabel*/ {
+	class Thing extends JLabel {
 		Point mapLoc;
+		
 		public Thing(Point p) {
 			mapLoc = p;
-			
-			//swing timer
-			Swing.Timer t = new Timer(15, new ActionListener() {
-				public void run() {
-					//uses walker dX, dY;
-					//sets object location in view
-					this.setLocation(this.getLocation().translate(dX, dY));
-				}	
-			});
-			t.start();
 		}
 	}
 }
@@ -71,13 +63,16 @@ class GUI {
 class Map {
 	int mapSize;
 	int viewSize;
+	int[] thingsMap;
+	int playerLoc;
 	
 	public Map(int m, int v) {
 		mapSize = m;
 		viewSize = v;
+		fillThingsMap();
 	}
 	
-	public void fillThingsMap(int[] tm) {
+	public void fillThingsMap() {
 		//generate obj's and their loc's
 		//into hashmap?
 	}
