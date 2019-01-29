@@ -1,79 +1,110 @@
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.awt.*;
 
 public class GameScratch {
 	public static void main(String[] args) {
-		GUI gui = new GUI();
+		SwingUtilities.envokeLater(new Runnable() {
+			public void run() {
+				GUI gui = new GUI();
+			}
+		});
 	}
 }
 
 class GUI {
 	int MAP_SIZE, VIEW_SIZE;
-	
-	int playerLoc, playerDest;
-	int[] thingsSet;
+	int picSize = 20;
+
+	private Color color = Color.BLACK;
+
+	JFrame f;
+	Walker w;
 	
 	public GUI() {
-		Map m = new Map(MAP_SIZE, VIEW_SIZE);
-		
-		Timer t1 = new Timer();
-		TimerTask shower = new TimerTask() {
-			public void run() {
-				//uses thingsMap, playerLoc
-				for(int thg: m.thingsMap) {
-					if(true) {
-						thingsSet.add(thg);
-					} else {
-						thingsSet.remove(thg);
-					}
-				}
-			}
-		};
-		t1.shedule(shower, 0, 15);
+		go();
+	}
 	
-		Timer t2 = new Timer();
-		TimerTask walker = new TimerTask() {
-			public void run() {
-				//uses playerLoc, playerDest
-				playerLoc.translate(dX, dY);
-				for(Thing thg: thingsSet) {
-					thg.setLocation(-dX, -dY);
-				}
-			}
-		};
-		t2.shedule(walker, 0, 200);
-	}//constructor
+	public void go() {
+		f = new JFrame("ScrollGame");
+		
+		w = new Walker();
+		Map.fillMap(MAP_SIZE, VIEW_SIZE, w.thgMap);
+
+		f.setVisible(true);
+	}//go
 	
 	class PlayerControl extends MouseAdapter implements MouseListener {
 		public void actionPerformed(ActionEvent ev) {
 			Point p = new Point();
-			playerDest.setLocation(p);
+			pDest.setLocation(p);
 		}	
 	}
 	
-	class Thing extends JLabel {
-		Point mapLoc;
+	public void paintComponent(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g;
+
+		g2d.setColor(color);
+		g2d.fillRect(VIEW_SIZE/2 - picSize/2, VIEW_SIZE/2 - picSize/2, picSize, picSize);
+		this.getToolkit().sync();
+	}
+
+	//player character
+	public void paintComponent(Graphics g) {}
+
+	private void show() {}
+}
+
+class Thing extends JLabel {
+	Point tLoc;
 		
-		public Thing(Point p) {
-			mapLoc = p;
-		}
+	public Thing(Point p) {
+		tLoc = p;
 	}
 }
 
+class Walker {
+	int speed = 200;
+	
+	Point pLoc, pDest;
+	
+	ArrayList<Thing> thgMap;
+	
+	int deltaX = pLoc.getX() - pDest.getX();
+	int deltaY = pLoc.getY() - pDest.getY();
+
+	int dX, dY;
+	
+	public Walker() {
+		Timer t1 = new Timer();
+		TimerTask walker = new TimerTask() {
+			public void run() {
+				walk();
+			}
+		};
+		t1.shedule(walker, 0, speed);
+	}
+	
+	public void walk(JLayeredPane screen) {
+		SwingUtilities.envokeLater(new Runnable(){
+			public void run() {
+				show();
+			}
+		});
+	}
+	
+	private void show() {}
+}
+
 class Map {
-	int mapSize;
-	int viewSize;
-	int[] thingsMap;
-	int playerLoc;
-	
-	public Map(int m, int v) {
-		mapSize = m;
-		viewSize = v;
-		fillThingsMap();
+	public static <T extends Thing> void filler(int mapSize, int viewSize, ArrayList<Thing> thgMap) {
+		while(true) {		
+			thgMap.add(<T>, randLoc());
+		}
 	}
 	
-	public void fillThingsMap() {
-		//generate obj's and their loc's
-		//into hashmap?
-	}
+	public static Point randLoc() {}
 }
