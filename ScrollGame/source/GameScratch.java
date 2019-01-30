@@ -87,6 +87,7 @@ class Walker {
 	}
 	
 	public void walk(JLayeredPane screen) {
+		//body
 		SwingUtilities.envokeLater(new Runnable(){
 			public void run() {
 				show();
