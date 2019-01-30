@@ -21,15 +21,12 @@ class GUI {
 	public static final int 	MAP_SIZE = 2400, 
 						VIEW_SIZE = 600;
 
-	int picSize = 20;
-	private Color color = Color.BLACK;
-
 	JFrame f;
 	JLayeredPane screen;
 
 	Player p1;
 
-	private long speed = 200;
+	private long speed = 1;
 	Walker w;
 	
 	public GUI() {
@@ -39,7 +36,7 @@ class GUI {
 	public void go() {
 		f = new JFrame("ScrollGame");
 		f.setSize(VIEW_SIZE, VIEW_SIZE);
-		f.setBackground(Color.decode("#defcec"));
+
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setLocationRelativeTo(null);
 		f.setUndecorated(true);
@@ -47,21 +44,21 @@ class GUI {
 
 		screen = new JLayeredPane();
 		screen.setLayout(null);
-		screen.setOpaque(false);
-		screen.setPreferredSize(f.getSize());	
+		screen.setOpaque(true);
+		screen.setBackground(Color.decode("#defcec"));
+		screen.setPreferredSize(f.getSize());
+
 		screen.addMouseListener(new PlayerControl());
 		
 		p1 = new Player();
-		p1.setSize(p1.getPreferredSize());
+		p1.setSize(screen.getPreferredSize());
 		p1.setOpaque(false);
-		screen.add(p1, 2);
+		screen.add(p1, JLayeredPane.DEFAULT_LAYER);
 
 		f.getContentPane().add(screen, BorderLayout.CENTER);
 
-		w = new Walker(screen, VIEW_SIZE);
+		w = new Walker(screen, VIEW_SIZE, MAP_SIZE);
 		Map.fillMap(MAP_SIZE, w.thgMap);
-
-		f.setVisible(true);
 
 		Timer t1 = new Timer();
 		TimerTask walker = new TimerTask() {
@@ -70,17 +67,24 @@ class GUI {
 			}
 		};
 		t1.scheduleAtFixedRate(walker, 0L, speed);
+
+		f.setVisible(true);
 	}//go
 	
 	class PlayerControl extends MouseAdapter implements MouseListener {
-		public void actionPerformed(ActionEvent ev) {
-			Point p = new Point();
-			w.pDest.setLocation(p);
-		}	
-	}
+		public void mousePressed(MouseEvent event) {	
+			if(SwingUtilities.isRightMouseButton(event)) {
+				Point p = new Point(event.getPoint());
+				w.setPDest(p);
+			}
+		}
+	}//inner
 
 	//player character sprite
 	class Player extends JLabel {
+		private int picSize = 20;
+		private Color color = Color.BLACK;
+
 		public void paintComponent(Graphics g) {
 			Graphics2D g2d = (Graphics2D) g;
 
@@ -95,10 +99,8 @@ class GUI {
 class Thing extends JLabel {
 	static int count;
 	int iD;
-
 	private int size = 21;
 	private Color color = new Color(0x8fbc8f);
-
 	private Point tLoc;
 		
 	public Thing(Point p) {
@@ -119,7 +121,9 @@ class Thing extends JLabel {
 }
 
 class Walker {
-	private int viewRange;
+	private int viewRange, fadeRange;
+	private int mapSize;
+
 	Point pLoc, pDest;
 
 	JLayeredPane screen;
@@ -129,19 +133,28 @@ class Walker {
 	int dX, dY;
 	int err;
 	
-	public Walker(JLayeredPane s, int vR) {
-		pLoc = new Point();
-		pDest = new Point();
+	public Walker(JLayeredPane s, int vR, int mS) {
+		pLoc = new Point(0, 0);
+		pDest = new Point(pLoc);
 
 		thgMap = new ArrayList<Thing>();
 		thgSet = new ArrayList<Thing>();
 		viewRange = vR;
+		fadeRange = viewRange + 100;
 		screen = s;
 	}
-	
+
+	public void setPDest(Point p) {
+		int a = -viewRange/2;
+		int b = -viewRange/2;
+		p.translate(a, b);
+		pDest.setLocation(pLoc.getX() + p.getX(), pLoc.getY() + p.getY());
+		System.out.println("playerDestination= " + pDest);
+	}
+
 	public void walk() {
-		int deltaX = (int) (pLoc.getX() - pDest.getX());
-		int deltaY = (int) (pLoc.getY() - pDest.getY());
+		int deltaX = (int) (pDest.getX() - pLoc.getX());
+		int deltaY = (int) (pDest.getY() - pLoc.getY());
 	
 		if(deltaX == 0) {
 			dX = 0;
@@ -173,13 +186,22 @@ class Walker {
 				dX = dZ(deltaY, deltaX, dX);
 			}
 		}
-		pLoc.translate(dX, dY);
 
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run() {
-				show();
-			}
-		});
+		if(dX != 0 || dY != 0) {
+			pLoc.translate(dX, dY);
+			SwingUtilities.invokeLater(new Runnable(){
+				public void run() {
+					show();
+				}
+			});
+		}
+
+		if(pLoc.getX() > mapSize) {pLoc.translate(-mapSize, 0);}
+		if(pLoc.getX() < 0) {pLoc.translate(mapSize, 0);}
+		if(pLoc.getY() > mapSize) {pLoc.translate(0, -mapSize);}
+		if(pLoc.getY() < 0) {pLoc.translate(0, mapSize);}
+
+		System.out.println("Arrived to " + pLoc);
 	}
 
 	private int dZ(int a, int b, int dz) {
@@ -194,40 +216,55 @@ class Walker {
 	
 	private void show() {
 		double dist;
-		int x, y;
+
+		for(Thing thg: thgSet) {
+			SwingUtilities.invokeLater(new Runnable(){
+				public void run() {
+					int x = (int) (thg.getLocation().getX());
+					int y = (int) (thg.getLocation().getY());
+					thg.setLocation(x - dX, y - dY);
+				}
+			});
+
+//			System.out.println("Thg " + thg.iD + ": " + thg.getTLoc().getX() + " " + thg.getTLoc().getY());
+//			System.out.println("Thing fades at " + thg.getTLoc().getX() + " " + thg.getTLoc().getY());
+
+			dist = thg.getTLoc().distance(pLoc);
+			if(dist > fadeRange) {
+				screen.remove(thg);
+				thgSet.remove(thg);
+			}
+		}//for
 
 		for(Thing thg: thgMap) {
 			dist = thg.getTLoc().distance(pLoc);
-			if(!thgSet.contains(thg)) {
-				if(dist < viewRange) {		
-					System.out.println("Thing at " + thg.getTLoc().getX() + " " + thg.getTLoc().getY());
-					thg.setSize(thg.getPreferredSize());
-					thg.setOpaque(false);
-					screen.add(thg, 5);
-					thgSet.add(thg);
-				}
-			} else {
-				if(dist < viewRange) {
-					x = (int) (thg.getTLoc().getX());
-					y = (int) (thg.getTLoc().getY());
-					thg.setLocation(x - dX, y - dY);
-					System.out.println("Thg " + thg.iD + ": " + thg.getTLoc().getX() + " " + thg.getTLoc().getY());
-				} else {
-					System.out.println("Thing fades at " + thg.getTLoc().getX() + " " + thg.getTLoc().getY());
-					screen.remove(thg);
-					thgSet.remove(thg);
-				}
+			if(!thgSet.contains(thg) && dist < viewRange) {
+				thgSet.add(thg);
+				SwingUtilities.invokeLater(new Runnable(){
+					public void run() {
+						int x = (int) (viewRange/2 - pLoc.getX() + thg.getTLoc().getX());
+						int y = (int) (viewRange/2 - pLoc.getY() + thg.getTLoc().getY());	
+						thg.setSize(screen.getPreferredSize());
+						thg.setOpaque(false);
+						screen.add(thg, 5);
+						thg.setLocation(x, y);
+						screen.validate();
+					}
+				});
 			}
 		}//for
-		screen.validate();
-	}
+	}//show
 }
 
 class Map {
 	public static void fillMap(int mapSize, ArrayList<Thing> thgMap) {
-		int treeAmount = mapSize / 15;
+		int treeAmount = mapSize/15;
+		Point p = new Point();
+		boolean success = false;
+
 		while(treeAmount != 0) {
-			thgMap.add(new Thing(randLoc(mapSize)));
+			p = randLoc(mapSize);
+			thgMap.add(new Thing(p));
 			treeAmount--;
 		}
 	}
@@ -236,6 +273,7 @@ class Map {
 		int x = (int) (Math.random()*mapSize);
 		int y = (int) (Math.random()*mapSize);
 		Point loc = new Point(x, y);
+		System.out.println("Thing at " + loc);
 		return loc;
 	}
 }
