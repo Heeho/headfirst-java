@@ -1,10 +1,10 @@
 import java.util.*;
 
 //instantiated in GUI as w
-public class WalkerTest {
+public class Walker {
 	//TESTER
 	public static void main(String[] args) {
-		WalkerTest test = new WalkerTest();
+		Walker test = new Walker();
 		System.out.println("walker starts");
 		test.go();	
 	}
