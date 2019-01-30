@@ -2,6 +2,25 @@ import java.util.*;
 
 //instantiated in GUI as w
 public class WalkerTest {
+	//TESTER
+	public static void main(String[] args) {
+		WalkerTest test = new WalkerTest();
+		System.out.println("walker starts");
+		test.go();	
+	}
+	
+	public void go() {
+		thgMap.add(new Thing(3, 5));
+		thgMap.add(new Thing(10, 14));
+		
+		//Timer
+		while(aX!=bX && aY!=bY) {
+			walk();
+			System.out.println(aX+" "+ aY);
+		}
+	}
+	//END TESTER
+
 	//pLoc
 	int aX = 0;
 	int aY = 0;
@@ -21,26 +40,7 @@ public class WalkerTest {
 	int dX, dY;
 	
 	int err;
-	
-//tester
-	public static void main(String[] args) {
-		WalkerTest test = new WalkerTest();
-		System.out.println("walker starts");
-		test.go();	
-	}
-	
-	public void go() {
-		thgMap.add(new Thing(3, 5));
-		thgMap.add(new Thing(10, 14));
 		
-		//Timer
-		while(aX!=bX && aY!=bY) {
-			walk();
-			System.out.println(aX+" "+ aY);
-		}
-	}
-//tester
-	
 	public void walk(/*g.screen*/) {		
 		if(deltaX == 0) {
 			dX = 0;
@@ -116,7 +116,7 @@ public class WalkerTest {
 		}//for
 		//screen.validate();
 	}
-
+}
 
 class Thing {
 	static int count;

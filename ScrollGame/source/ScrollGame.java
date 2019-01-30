@@ -7,52 +7,62 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class ScrollGame implements Runnable {
-	public static final int VIEW_SIZE = 600;
-	public static final int MAP_SIZE = 2400;
 
-	private String name;
-
-	private Map m = new Map(MAP_SIZE, VIEW_SIZE);
-	private PlayerGUI pg = new PlayerGUI(VIEW_SIZE);
-
-	private JFrame f;
-	private JLayeredPane screen;
-
-	private HashSet<Point> treeLocationsInView;	//tree locations in range
-	private HashSet<Tree> treesInView;			//reference array to hold visible Trees
+public class ScrollGame {
 	public static void main(String[] args) {
 		ScrollGame game = new ScrollGame();
 		game.go();
 	}
 
 	public void go() {
+		private GUI gui = new GUI();
+	}
+}//scrollgame
+
+class GUI {
+	public static final int VIEW_SIZE = 600;
+	public static final int MAP_SIZE = 2400;
+
+	private int showerSpeed = 1000/15;
+	//as in FPS = 1000/x
+
+	private String name;
+
+	private Player p1 = new Player();
+	private Map m = new Map(MAP_SIZE, VIEW_SIZE);
+
+	private JFrame f;
+	private JLayeredPane gui;
+
+	private HashSet<Thing> thingsInView;
+
+	public void go() {
 		f = new JFrame("ScrollGame");
 		f.setSize(VIEW_SIZE, VIEW_SIZE);
+		f.setBackground(Color.decode("#defcec"));
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setLocationRelativeTo(null);
 		f.setUndecorated(true);
 		f.setResizable(false);
 
-		screen = new JLayeredPane();
-		screen.setOpaque(true);
-		screen.setPreferredSize(f.getSize());	
-		screen.setBackground(Color.decode("#defcec"));
-		screen.addMouseListener(new PlayerControl());
+		gui = new JLayeredPane();
+		gui.setLayout(null);
+		gui.setOpaque(false);
+		gui.setPreferredSize(f.getSize());	
+//		gui.setBackground(Color.decode("#defcec"));
+		gui.addMouseListener(new PlayerControl());
 
-		pg.setSize(screen.getPreferredSize());	
-		pg.setOpaque(false);
-		screen.add(pg, 2);
+		p1.setSize(gui.getPreferredSize());	
+		p1.setOpaque(false);
+		gui.add(p1, 2);
 
-		//just make a hashset of Things in view
-		treeLocationsInView = new HashSet<Point>();
-		treesInView = new HashSet<Tree>();
+		f.getContentPane().add(gui, BorderLayout.CENTER);
 
-		f.getContentPane().add(screen, BorderLayout.CENTER);
+		Timer thingsInViewCalc = new Timer(showerSpeed, new Shower());
+		thingsInViewCalc.start();
+		System.out.println("shower starts");
+
 		f.setVisible(true);
-
-		Thread viewFiller = new Thread(this);
-		viewFiller.start();
 	}
 
 	class PlayerControl extends MouseAdapter implements MouseListener {
@@ -64,91 +74,92 @@ public class ScrollGame implements Runnable {
 		}
 	}//inner
 
-	public void run () {	//check objects to add to view
-		while(true) {
-			//make Things array, instantiate if in view
-			for(Point loc: m.getTreeLocations()) {
-				if(loc.distance(m.getPlayerLocation()) < VIEW_SIZE/2) {
-					if(!(treeLocationsInView.contains(loc))) {
-						System.out.println("Tree in view at " + loc);
-						treesInView.add(new Tree(loc));
-					}
-					treeLocationsInView.add(loc);
+	class Player extends JLabel {
+		private int picSize = 20;
+		private Color color = Color.BLACK;
+
+		public void paintComponent(Graphics g) {
+			Graphics2D g2d = (Graphics2D) g;
+
+			g2d.setColor(color);
+			g2d.fillRect(VIEW_SIZE/2 - picSize/2, VIEW_SIZE/2 - picSize/2, picSize, picSize);
+//			this.getToolkit().sync();		//will be handy for player sprite
+		}
+
+		//Might insert some Listeners for player character interaction
+
+	}//inner
+
+	class Shower implements ActionListener {
+		public void actionPerformed(ActionEvent ev) {
+			Point thgLoc = new Point();
+			for(Thing thg: m.getThingsSet()) {
+				thgLoc = thg.getMapLocation();
+				if(thgLoc.distance(m.getPlayerLocation()) < VIEW_SIZE/2) {
+					System.out.println("Thing in view at " + thgLoc);
+					thingsInView.add(thg);
 				} else {
-					treeLocationsInView.remove(loc);
+					thingsInView.remove(thg);
 				}
 			}//for
-		}//while
-	}
-	
-//make Things superclass for game objects
-class PlayerGUI extends JPanel {
-	private int viewSize;
-	private int picSize = 20;
-	private Color color = Color.BLACK;
+		}//method
+	}//timer
 
-	public PlayerGUI(int view) {
-		viewSize = view;
+class Thing extends JLabel {
+	private int size = 21;
+	private Color color = new Color(0x8fbc8f);
+	private Point mapLocation;
+
+	public Thing(Point p) {
+		mapLocation = new Point(p);
+
+//		this.setSize(gui.getPreferredSize());
+//		this.setOpaque(false);
+//		gui.add(this, 0);
+			
+//		Thread rangeCheck = new Thread(this);
+//		rangeCheck.start();
+
+		Timer drawInView = new Timer(15, new Relocation());
+		drawInView.start();
+	}
+
+	public Point getMapLocation() {
+		return mapLocation;
 	}
 
 	public void paintComponent(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 
 		g2d.setColor(color);
-		g2d.fillRect(viewSize/2 - picSize/2, viewSize/2 - picSize/2, picSize, picSize);
-		this.getToolkit().sync();
+		g2d.fillRect(0, 0, size, size);
 	}
 
-	//Might insert some Listeners for player character interaction
+	//apply Bresenham algorithm in Relocation
+	//maybe better to place it in Timer@Map
 
-}//inner
-
-	class Tree extends JPanel implements Runnable {
-		private int size = 21;
-		private Color color = new Color(0x8fbc8f);
-		private Point treeLocation;
-
-		public Tree(Point p) {
-			treeLocation = new Point(p);
-
-			this.setSize(screen.getPreferredSize());
-			this.setOpaque(false);
-			screen.add(this, 0);
-			
-			Thread rangeCheck = new Thread(this);
-			rangeCheck.start();
-
-		//remake into Swing.Timer, so it throw events for EDT
-		//apply Bresenham algorithm
-		public void run() {
+	class Relocation implements ActionListener {
+		public void actionPerformed(ActionEvent ev) {
 			int x, y;
 			while(true) {
 				if(this.getLocation().distance(m.getPlayerLocation()) < VIEW_SIZE) {
-					x = (int) (VIEW_SIZE/2 - (m.getPlayerLocation().getX() - treeLocation.getX()));
-					y = (int) (VIEW_SIZE/2 - (m.getPlayerLocation().getY() - treeLocation.getY()));
+					x = (int) (VIEW_SIZE/2 - (m.getPlayerLocation().getX() - mapLocation.getX()));
+					y = (int) (VIEW_SIZE/2 - (m.getPlayerLocation().getY() - mapLocation.getY()));
 
 					this.setLocation(x, y);
 				} else {
-					treesInView.remove(this);
+					thingsInView.remove(this);
+					drawInView.stop();
 					break;
 				}
 			}
 		}
-
-		public void paintComponent(Graphics g) {
-			Graphics2D g2d = (Graphics2D) g;
-
-			g2d.setColor(color);
-			g2d.fillRect(0, 0, size, size);
-			this.getToolkit().sync();
-		}
 	}//inner
-
+}//inner
 	class MapBorder extends JPanel {}
+}//gui
 
-}//scrollgame
-
-class Map implements Runnable {
+class Map {
 	private Point 	playerLocation, 
 				playerDestination;
 
@@ -158,32 +169,36 @@ class Map implements Runnable {
 	public static final double WALK_STEP = 2*Math.sqrt(2);		
 	//sqrt(2), 2*sqrt(2) for 8 and 16 possible moving directions
 
-	private int speed = 200;
-	//which is a number of WALK_STEP per 1000ms, so walker sleep is 1000/speed
+	private HashSet<Thing> thingsSet;	//all the things on map
 
-	private ArrayList<Point> treeLocations;	//all the trees
+	private int walkerSpeed = 1000/200;
+	//as in FPS = 1000/x
 
-	//generate Things and add to array instead of Points
 	public Map(int map, int view) {
 		mapSize = map;
 		viewSize = view;
 
 		playerLocation = new Point();
-		playerLocation.setLocation(randLocation());
+		playerLocation.setLocation(900, 900);
+//		playerLocation.setLocation(randLocation());
 		System.out.println("playerLocation = " + playerLocation);
+
 		playerDestination = new Point(playerLocation);
 
 		int treeAmount = (int) Math.pow(mapSize/viewSize, 2)/2;
 
-		treeLocations = new ArrayList<Point>();
+		thingsSet = new HashSet<Thing>();
 
-		treeLocations.add(new Point(1200, 1200));
+		Point testLoc = new Point(1200, 1200);
+		thingsSet.add(new Thing(testLoc));
+
 //		for(int i = 0; i < treeAmount; i++) {
-//			treeLocations.add(randLocation());
+//			thingsSet.add(randLocation());
 //		}
 
-		Thread walker = new Thread(this);
-		walker.start();
+		Timer playerLocationCalc = new Timer(walkerSpeed, new Walker());
+		playerLocationCalc.start();
+		System.out.println("walker starts");
 	}
 
 	public Point randLocation() {
@@ -205,15 +220,16 @@ class Map implements Runnable {
 		return playerLocation;
 	}
 
-	public ArrayList<Point> getTreeLocations() {
-		return treeLocations;
+	public HashSet<Thing> getThingsSet() {
+		return thingsSet;
 	}
 
-	//remake into util.Timer
-	//apply Bresenham algorithm
-	public void run() {	
-		System.out.println("walker starts");
-		while(true) {
+
+	//apply Bresenham algorithm below
+
+	class Walker implements ActionListener {
+		public void actionPerformed(ActionEvent ev) {
+			//playerLocation calculator, responds to MouseListener on gui
 			if(
 				(playerDestination.getX() > 0 && playerDestination.getX() < mapSize) &&
 				(playerDestination.getY() > 0 && playerDestination.getY() < mapSize)
@@ -225,7 +241,8 @@ class Map implements Runnable {
 				int dX = (int) (WALK_STEP * cosPhi);
 				int dY = (int) (WALK_STEP * sinPhi);
 
-				playerLocation.setLocation(playerLocation.getX() + dX, playerLocation.getY() + dY);
+				playerLocation.translate(dX, dY);
+//				playerLocation.setLocation(playerLocation.getX() + dX, playerLocation.getY() + dY);	
 
 				if(playerLocation.distance(playerDestination) < WALK_STEP) {
 					playerLocation.setLocation(playerDestination);
@@ -234,14 +251,8 @@ class Map implements Runnable {
 					System.out.println("Arrived to " + playerLocation);
 				}				
 			}//if
-
-			try {
-				Thread.sleep(1000/speed);
-			} catch (InterruptedException ex) {
-				ex.printStackTrace();
-			}
-		}//while
-	}//run
+		}//method
+	}//timer
 }//map
 
 

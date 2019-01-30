@@ -1,8 +1,6 @@
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.HashMap;
 import java.awt.*;
 
 public class GameScratch {
@@ -17,8 +15,8 @@ public class GameScratch {
 
 class GUI {
 	int MAP_SIZE, VIEW_SIZE;
-	int picSize = 20;
 
+	int picSize = 20;
 	private Color color = Color.BLACK;
 
 	JFrame f;
