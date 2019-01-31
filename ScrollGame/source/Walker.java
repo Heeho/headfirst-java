@@ -10,38 +10,50 @@ public class Walker {
 	}
 	
 	public void go() {
-		thgMap.add(new Thing(3, 5));
+		thgMap.add(new Thing(1, 2));	
+		thgMap.add(new Thing(24, 1));
+		thgMap.add(new Thing(3, 23));
 		thgMap.add(new Thing(10, 14));
 		
 		//Timer
-		while(aX!=bX && aY!=bY) {
-			walk();
-			System.out.println(aX+" "+ aY);
+		for(int i = 0; i < mapSize*3; i++) {
+			bX = aX + viewRange;
+			bY = aY + viewRange;
+			while (aX!=bX && aY!=bY) {
+				walk();
+				System.out.println(aX+" "+ aY);
+			}
 		}
 	}
 	//END TESTER
 
+	int mapSize = 24;
+	int viewRange = 4;
+	int fadeRange = 5;
+	
 	//pLoc
 	int aX = 0;
 	int aY = 0;
-	
-	//pDest
-	int bX = 20;
-	int bY = 35;
 
+	int bX, bY;
+	
 	//g.screen
 	ArrayList<Thing> screen = new ArrayList<Thing>();
 	
 	ArrayList<Thing> thgMap = new ArrayList<Thing>();
 	
-	int deltaX = bX - aX;
-	int deltaY = bY - aY;
+	int deltaX, deltaY;
 	
 	int dX, dY;
+	
+	int distX, distY;
 	
 	int err;
 		
 	public void walk(/*g.screen*/) {		
+		deltaX = bX - aX;
+		deltaY = bY - aY;
+		
 		if(deltaX == 0) {
 			dX = 0;
 		} else {
@@ -72,13 +84,21 @@ public class Walker {
 				dX = dZ(deltaY, deltaX, dX);
 			}
 		}
-		aX += dX;
-		aY += dY;	
-
-//EDT, envokeLater
-		show();
+		
+		if(dX != 0 || dY != 0) {
+			aX = wrap(aX + dX);
+			aY= wrap(aY + dY);
+			show();
+		}
 	}
 	
+	private int wrap(int a) {
+		if(a > mapSize) {
+			a %= mapSize + 1;
+		}
+		return a;
+	}
+
 	private int dZ(int a, int b, int dz) {
 		int add = 0;
 		err += b;
@@ -89,31 +109,49 @@ public class Walker {
 		return add;
 	}
 
-//EDT, envokeLater
 	private void show() {
-		double dist;
-		
+		for(Thing thg: screen) {
+			//thg.setLocation();
+			thg.x -= dX;
+			thg.y -= dY;
+			System.out.println("Thing " + thg.iD + ": " + thg.x + " " + thg.y);
+			
+			distX = thg.tx - aX;
+			distY = thg.ty - aY;
+			if(Math.abs(distX) > fadeRange &&
+				Math.abs(distX) < (mapSize - fadeRange) ||
+				Math.abs(distY) > fadeRange &&
+				Math.abs(distY) < (mapSize - fadeRange))
+			{
+				System.out.println("Thing " + thg.iD + " fades at " + thg.x + " " + thg.y);
+				screen.remove(thg);
+			}
+
+		}//for
+
 		for(Thing thg: thgMap) {
 			//= tLoc.distance(pLoc)
-			dist = Math.sqrt(Math.pow((thg.x - aX), 2) + Math.pow((thg.y - aY), 2));
+			distX = thg.tx - aX;
+			distY = thg.ty - aY;
 			if(!screen.contains(thg)) {
-				if(dist < 7) {		
-					System.out.println("Thing at " + thg.x + " " + thg.y);
+				if(Math.abs(distX) < viewRange && Math.abs(distY) < viewRange) {
+					System.out.println("Thing " + thg.iD + " at " + thg.tx + " " + thg.ty);
 					//screen.add(thg, 5);
+					thg.x = viewRange + distX;
+					thg.y = viewRange + distY;
 					screen.add(thg);
 				}
-			} else {
-				if(dist < 7) {
-					//thg.setLocation();
-					thg.x -= dX;
-					thg.y -= dY;
-					System.out.println("Thg " + thg.iD + ": " + thg.x + " " + thg.y);
-				} else {
-					System.out.println("Thing fades at " + thg.x + " " + thg.y);
-					screen.remove(thg);
+				
+				if(Math.abs(distX) > (mapSize - viewRange) &&
+					Math.abs(distY) > (mapSize - viewRange)) {
+					System.out.println("Thing " + thg.iD + " at " + thg.tx + " " + thg.ty);
+					//screen.add(thg, 5);
+					thg.x = viewRange + thg.tx;
+					thg.y = viewRange + thg.ty;
+					screen.add(thg);
 				}
 			}
-		}//for
+		}
 		//screen.validate();
 	}
 }
@@ -122,12 +160,15 @@ class Thing {
 	static int count;
 	int iD;
 //Point tLoc;
+	int tx;
+	int ty;
+//screen loc
 	int x;
 	int y;
 	
 	public Thing(int a, int b) {
 		iD = count++;
-		x = a;
-		y = b;
+		tx = a;
+		ty = b;
 	}
 }
