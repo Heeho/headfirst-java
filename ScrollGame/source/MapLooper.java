@@ -3,19 +3,17 @@ public class MapLooper {
 	
 	public static void main(String[] args) {
 		MapLooper test = new MapLooper();
-		int a = 0;
-		for(int i = 0; i < 9; i++) {
-			System.out.println(a);
-			a++;
-			test.wrap(a);
+		for(int i = 0; i < 19; i++) {
+			System.out.println(test.wrap(i));
 		}
 	}
 	
-	int mapSize = 4;
+	int mapSize = 10; //0-10
 	
-	public void wrap(int a) {
+	public int wrap(int a) {
 		if(a > mapSize) {
 			a %= mapSize + 1;
 		}		
+		return a;
 	}
 }

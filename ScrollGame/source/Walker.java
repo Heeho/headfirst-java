@@ -11,12 +11,12 @@ public class Walker {
 	
 	public void go() {
 		thgMap.add(new Thing(1, 2));	
-		thgMap.add(new Thing(24, 1));
-		thgMap.add(new Thing(3, 23));
+		thgMap.add(new Thing(24, 0));
+		thgMap.add(new Thing(0, 24));
 		thgMap.add(new Thing(10, 14));
 		
 		//Timer
-		for(int i = 0; i < mapSize*3; i++) {
+		for(int i = 0; i < 2; i++) {
 			bX = aX + viewRange;
 			bY = aY + viewRange;
 			while (aX!=bX && aY!=bY) {
@@ -110,6 +110,7 @@ public class Walker {
 	}
 
 	private void show() {
+		int a, b;
 		for(Thing thg: screen) {
 			//thg.setLocation();
 			thg.x -= dX;
@@ -118,10 +119,11 @@ public class Walker {
 			
 			distX = thg.tx - aX;
 			distY = thg.ty - aY;
-			if(Math.abs(distX) > fadeRange &&
-				Math.abs(distX) < (mapSize - fadeRange) ||
-				Math.abs(distY) > fadeRange &&
-				Math.abs(distY) < (mapSize - fadeRange))
+			
+			if((Math.abs(distX) > fadeRange &&
+				Math.abs(distX) < (mapSize - fadeRange)) ||
+				(Math.abs(distY) > fadeRange &&
+				Math.abs(distY) < (mapSize - fadeRange)))
 			{
 				System.out.println("Thing " + thg.iD + " fades at " + thg.x + " " + thg.y);
 				screen.remove(thg);
@@ -130,24 +132,43 @@ public class Walker {
 		}//for
 
 		for(Thing thg: thgMap) {
-			//= tLoc.distance(pLoc)
 			distX = thg.tx - aX;
 			distY = thg.ty - aY;
 			if(!screen.contains(thg)) {
-				if(Math.abs(distX) < viewRange && Math.abs(distY) < viewRange) {
+				if(Math.abs(distX) < viewRange && 
+					Math.abs(distY) < viewRange) 
+				{
 					System.out.println("Thing " + thg.iD + " at " + thg.tx + " " + thg.ty);
 					//screen.add(thg, 5);
 					thg.x = viewRange + distX;
 					thg.y = viewRange + distY;
 					screen.add(thg);
 				}
-				
-				if(Math.abs(distX) > (mapSize - viewRange) &&
-					Math.abs(distY) > (mapSize - viewRange)) {
+				//gotta keep em separated
+				if(Math.abs(distX) > (mapSize - viewRange) ||
+					Math.abs(distY) > (mapSize - viewRange))
+				{
 					System.out.println("Thing " + thg.iD + " at " + thg.tx + " " + thg.ty);
+
 					//screen.add(thg, 5);
-					thg.x = viewRange + thg.tx;
-					thg.y = viewRange + thg.ty;
+					if(distX > 0) {
+						a = thg.tx - mapSize;
+					} else {
+						a = thg.tx + mapSize;
+					}
+									
+					if(distY > 0) {
+						b = thg.ty - mapSize;
+					} else {
+						b = thg.ty + mapSize;
+					}
+
+					distX = a - aX;
+					distY = b - aY;
+					
+					thg.x = viewRange + distX;
+					thg.y = viewRange + distY;
+
 					screen.add(thg);
 				}
 			}
@@ -162,7 +183,7 @@ class Thing {
 //Point tLoc;
 	int tx;
 	int ty;
-//screen loc
+//get/setLocation();
 	int x;
 	int y;
 	
