@@ -29,8 +29,8 @@ class GUI {
 	public void go() {
 		f = new JFrame("ScrollGame");
 		
-		w = new Walker();
-		Map.fillMap(MAP_SIZE, VIEW_SIZE, w.thgMap);
+		w = new Walker(/*args*/);
+		Map.fillMap(MAP_SIZE, VIEW_SIZE);
 
 		f.setVisible(true);
 	}//go
@@ -38,7 +38,7 @@ class GUI {
 	class PlayerControl extends MouseAdapter implements MouseListener {
 		public void actionPerformed(ActionEvent ev) {
 			Point p = new Point();
-			pDest.setLocation(p);
+			w.dest.setLocation(p);
 		}	
 	}
 	
@@ -65,11 +65,14 @@ class Thing extends JLabel {
 class Walker {}
 
 class Map {
-	public static <T extends Thing> void filler(int mapSize, int viewSize, ArrayList<Thing> thgMap) {
+	ArrayList<Thing> thgMap= new ArrayList<Thing>();
+	public static void fillMap(int mapSize, int viewSize) {
 		while(true) {		
-			thgMap.add(<T>, randLoc());
+			thgMap.add(new Thing(randLoc()));
 		}
 	}
 	
-	public static Point randLoc() {}
+	public static Point randLoc() {
+		return new Point();
+	}
 }
