@@ -52,8 +52,6 @@ class GUI {
 
 	//player character
 	public void paintComponent(Graphics g) {}
-
-	private void show() {}
 }
 
 class Thing extends JLabel {
@@ -64,39 +62,7 @@ class Thing extends JLabel {
 	}
 }
 
-class Walker {
-	int speed = 200;
-	
-	Point pLoc, pDest;
-	
-	ArrayList<Thing> thgMap;
-	
-	int deltaX = pLoc.getX() - pDest.getX();
-	int deltaY = pLoc.getY() - pDest.getY();
-
-	int dX, dY;
-	
-	public Walker() {
-		Timer t1 = new Timer();
-		TimerTask walker = new TimerTask() {
-			public void run() {
-				walk();
-			}
-		};
-		t1.shedule(walker, 0, speed);
-	}
-	
-	public void walk(JLayeredPane screen) {
-		//body
-		SwingUtilities.envokeLater(new Runnable(){
-			public void run() {
-				show();
-			}
-		});
-	}
-	
-	private void show() {}
-}
+class Walker {}
 
 class Map {
 	public static <T extends Thing> void filler(int mapSize, int viewSize, ArrayList<Thing> thgMap) {
