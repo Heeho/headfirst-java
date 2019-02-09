@@ -1,11 +1,19 @@
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.ArrayList;
+import javax.swing.*;
+import javax.swing.SwingUtilities;
 import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.Point2D;
 
 public class GameScratch {
+	public static int 	MAP_XY = 2400,
+					VIEW_SIZE = 600;
+
 	public static void main(String[] args) {
-		SwingUtilities.envokeLater(new Runnable() {
+		Map.fillMap(MAP_XY);
+		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				GUI gui = new GUI();
 			}
@@ -14,13 +22,9 @@ public class GameScratch {
 }
 
 class GUI {
-	int MAP_SIZE, VIEW_SIZE;
-
-	int picSize = 20;
-	private Color color = Color.BLACK;
-
 	JFrame f;
-	Walker w;
+	JLayeredPane screen;
+	Player p1;
 	
 	public GUI() {
 		go();
@@ -28,51 +32,39 @@ class GUI {
 	
 	public void go() {
 		f = new JFrame("ScrollGame");
-		
-		w = new Walker(/*args*/);
-		Map.fillMap(MAP_SIZE, VIEW_SIZE);
+		f.setSize(GameScratch.VIEW_SIZE, GameScratch.VIEW_SIZE);
 
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.setLocationRelativeTo(null);
+		f.setUndecorated(true);
+		f.setResizable(false);
+
+		screen = new JLayeredPane();
+		screen.setLayout(null);
+		screen.setOpaque(true);
+		screen.setBackground(Color.decode("#defcec"));
+		screen.setPreferredSize(f.getSize());
+
+		p1 = new Player(screen);
+		int pLocOnScreen = GameScratch.VIEW_SIZE/2 - p1.picSize;
+
+		p1.setSize(screen.getPreferredSize());
+		p1.setOpaque(false);
+		p1.setLocation(pLocOnScreen, pLocOnScreen);
+		screen.add(p1, JLayeredPane.DEFAULT_LAYER);
+
+		f.getContentPane().add(screen, BorderLayout.CENTER);
 		f.setVisible(true);
 	}//go
 	
 	class PlayerControl extends MouseAdapter implements MouseListener {
 		public void actionPerformed(ActionEvent ev) {
 			Point p = new Point();
-			w.dest.setLocation(p);
+			p1.pDest.setLocation(p);
 		}	
 	}
-	
-	public void paintComponent(Graphics g) {
-		Graphics2D g2d = (Graphics2D) g;
-
-		g2d.setColor(color);
-		g2d.fillRect(VIEW_SIZE/2 - picSize/2, VIEW_SIZE/2 - picSize/2, picSize, picSize);
-		this.getToolkit().sync();
-	}
-
-	//player character
-	public void paintComponent(Graphics g) {}
 }
 
-class Thing extends JLabel {
-	Point tLoc;
-		
-	public Thing(Point p) {
-		tLoc = p;
-	}
-}
 
-class Walker {}
 
-class Map {
-	ArrayList<Thing> thgMap= new ArrayList<Thing>();
-	public static void fillMap(int mapSize, int viewSize) {
-		while(true) {		
-			thgMap.add(new Thing(randLoc()));
-		}
-	}
-	
-	public static Point randLoc() {
-		return new Point();
-	}
-}
+

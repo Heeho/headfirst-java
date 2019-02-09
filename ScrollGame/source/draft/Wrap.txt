@@ -27,14 +27,4 @@ public class Wrap {
 			b += mapSize;
 		}
 	}
-/* in show:
-				if(Math.abs(distX) > (mapSize - viewRange)) {
-					if(distX > 0) {
-						a = thg.tx - mapSize;
-					} else {
-						a = thg.tx + mapSize;
-					}
-					distX = a - aX;
-				}
-*/
 }

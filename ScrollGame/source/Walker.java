@@ -1,216 +1,197 @@
-import java.util.*;
+/*Walker
+ * 
+ * screen is used to fill gui pane or
+ * npc vision list
+ * 
+ * 3D calc would be possible
+ * with copypaste for Z
+ */
 
-//instantiated in GUI as w
-public class Walker {
-	//TESTER
-	public static void main(String[] args) {
-		Walker test = new Walker();
-		System.out.println("walker starts");
-		test.go();	
-	}
-	
-	public void go() {
-		thgMap.add(new Thing(3, 4));	
-		thgMap.add(new Thing(24, 0));
-		thgMap.add(new Thing(0, 24));
-		thgMap.add(new Thing(24, 24));
-		thgMap.add(new Thing(10, 14));
+class Walker {
+	ArrayList<Thing> screen = newArrayList<Thing>();
 
-		//Timer
-		for(int i = 0; i < 33; i++) {
-			bX += viewRange;
-			bY += viewRange;
-			walk();
-			show();
-			System.out.println(aX+" "+ aY);
-		}
-	}
-	//END TESTER
-
-	int mapXY = 24; //as in x=(0.. 24)
-	int mapSize = mapXY + 1; 
-	int viewRange = 4;
+	ArrayList<Thing> map;	
+	int mXY;
+	int mS;
 	
-	//generated with Map.fillMap(*)
-	ArrayList<Thing> thgMap = new ArrayList<Thing>();
+	int vR;
+	Point loc, dest;
 	
-	//Point pLoc, pDist
 	int aX, aY, bX, bY;
-	private int dX, dY, err;
+	int dX, dY;
+	int err; //set to 0 when dest changes? meh
+	int distX, distY;
+	int tX, tY;
 	
-	//pass to g.screen or NPC array later
-	ArrayList<Thing> screen = new ArrayList<Thing>();
+	public Walker(int viewrange, Point location, Point destination){
+		map = Map.thgMap;
+		mXY = GameScratch.MAP_XY;
+		mS = mXY + 1; // mapSize
 		
-	public void walk() {		
-		//todo: make a single method
-		//with X and Y args
+		vR = viewrange;
 		
-		//arrange aX and the rest;
-		//deltaX/Y = pDist.getX/Y()
-		//- pLoc.getX/Y();
-		int deltaX = bX - aX;
-		if(deltaX == 0) {
-			dX = 0;
-		} else {
-			if(deltaX < 0) {
-				dX = -1;
+		loc = location;
+		dest = destination;
+	}
+	
+	public void walk() {
+		int deltaX, deltaY;
+		
+		aX = (int) loc.getX();
+		aY = (int) loc.getY();
+		
+		bX = (int) dest.getX();
+		bY = (int) dest.getY();
+			
+		deltaX = bX - aX;
+		deltaY = bY - aY;
+
+		dX = calc(deltaX);
+		dY = calc(deltaY);
+	
+		deltaX = Math.abs(deltaX);
+		deltaY = Math.abs(deltaY);
+
+		recalcd(deltaX, deltaY);
+		
+		move();
+		
+		show();
+	}
+	
+	private int calc(int delta) {
+		int d = 0;
+
+		if(delta != 0) {
+			if(delta < 0) {
+				d = -1;
 			} else {
-				dX = 1;
+				d = 1;
 			}
 		}		
-		deltaX = Math.abs(deltaX);
+		return d;
+	}
 
-		int deltaY = bY - aY;
-		if(deltaY == 0) {
-			dY = 0;
-		} else {
-			if(deltaY < 0) {
-				dY = -1;
+	/*3D appears, what we do?
+	 *keep calm & copypaste shit
+	 */	
+	private void recalcd(int delta1, int delta2) {
+		if(delta1 != delta2) {
+			if(delta1 > delta2) {
+				dY = dO(delta1, delta2, dY);
 			} else {
-				dY = 1;
+				dX = dO(delta2, delta1, dX);
 			}
-		}				
-		deltaY = Math.abs(deltaY);
-		
-		if(deltaX != deltaY) {
-			if(deltaX > deltaY) {
-				dY = dZ(deltaX, deltaY, dY);
-			} else {
-				dX = dZ(deltaY, deltaX, dX);
-			}
-		}
-		
-		if(dX != 0 || dY != 0) {
-			//pLoc.translate(dX, dY);
-			aX += dX;
-			aY += dY;	
-			
-			wrap();
 		}
 	}
 	
-	private int dZ(int a, int b, int dz) {
+	private int dO(int a, int b, int d) {
 		int add = 0;
 		err += b;
 		if(2*err >= a) {
-			add = dz;
+			add = d;
 			err -= a;
 		}
 		return add;
 	}
 
-	private void wrap() {
-		if(aX > mapXY) {
-			aX -= mapSize;
-			bX -= mapSize;
-		}
-		if(aX < 0) {
-			aX += mapSize;
-			bX += mapSize;
-		}
-		
-		if(aY > mapXY) {
-			aY -= mapSize;
-			bY -= mapSize;
-		}
-		if(aY < 0) {
-			aY += mapSize;
-			bY += mapSize;
+	private void move() {
+		if(dX != 0) {
+			aX += dX;
+			aY += dY;	
+			wrap();
 		}
 	}
-
-	private void show() {
-		int a, b;
-		//thg.tLoc.getX/Y() - pLoc.getX/Y();
-		int distX, distY;
 	
+	private void wrap () {
+		if(aX > mXY) {
+			aX -= mS;
+			bX -= mS;
+		}
+		
+		if(aX < 0) {
+			aX += mS;
+			bX += mS;
+		}
+		
+		if(aY > mXY) {
+			aY -= mS;
+			bY -= mS;
+		}
+		
+		if(aY < 0) {
+			aY += mS;
+			bY += mS;
+		}
+		loc.setLocation(aX, aY);
+		dest.setLocation(bX, bY);
+	}
+	
+	private void show() {
+		moverem();
+		addthg();
+	}
+	
+	private void moverem() {
 		ArrayList<Thing> remList = new ArrayList<Thing>(); 
+		int x, y;
 
-		for(Thing thg: screen) {
-			//thg.x/y = thg.getLocation().getX/Y();		
-			//thg.setLocation(thg.x - dX, thg.y - dY);
-			thg.x -= dX;
-			thg.y -= dY;
-			System.out.println("Thing " + thg.iD + ": " + thg.x + " " + thg.y + " on screen");
-			
-			//distX/Y = thg.tLoc.getX/Y() - pLoc.getX/Y();
-			distX = thg.tx - aX;
-			distY = thg.ty - aY;
-			
-			if((Math.abs(distX) > viewRange &&
-				Math.abs(distX) < (mapSize - viewRange)) ||
-				(Math.abs(distY) > viewRange &&
-				Math.abs(distY) < (mapSize - viewRange)))
-			{
-				System.out.println("Thing " + thg.iD + " fades at " + thg.x + " " + thg.y + " on screen");
+		for(Thing thg: screen) {	
+			int x = thg.getLocation().getX();		
+			int y = thg.getLocation().getY();
+			thg.setLocation(x - dX, y - dY);
 
-				//screen.remove(thg);
-				//concurrent removal if >1 thgs
-				//when iterating the ArrayList
+			tX = thg.tLoc.getX();
+			tY = thg.tLoc.getY();
+
+			distX = Math.abs(tX - aX);
+			distY = Math.abs(tY - aY);
+
+			if(
+				(distX > vR && distX < (mS - vR)) ||
+				(distY > vR && distY < (mS - vR))
+			){
+				System.out.println("Thing " + thg.iD + " fades at " + x + " " + y + " on screen");
 				remList.add(thg);
 			}
 		}//for
 		
 		for (Thing thg: remList) {
 			screen.remove(thg);
-		}
-		remList.clear();
-		
-		for(Thing thg: thgMap) {			
-			if(!screen.contains(thg)) {
+		}	
+	}
 	
-				distX = thg.tx - aX;		
+	private void addthg() {
+		for(Thing thg: map) {			
+			if(!screen.contains(thg)) {
+				distX = tX - aX;		
+				distY = tY - aY;
 				
-				if(Math.abs(distX) > (mapSize - viewRange)) {
-					if(distX > 0) {
-						a = thg.tx - mapSize;
-					} else {
-						a = thg.tx + mapSize;
-					}
-					distX = a - aX;
-				}
+				distX = wrapthg(distX);
+				distY = wrapthg(distY);
 
-				distY = thg.ty - aY;
-				
-				if(Math.abs(distY) > (mapSize - viewRange)) {
-					if(distY > 0) {
-						b = thg.ty - mapSize;
-					} else {
-						b = thg.ty + mapSize;
-					}
-					distY = b - aY;
-				}
-			
-				if(Math.abs(distX) < viewRange &&
-					Math.abs(distY) < viewRange)
-				{
-					thg.x = viewRange + distX;
-					thg.y = viewRange + distY;
-					//thg.setLocation(thg.x, thg.y);
+				if(
+					Math.abs(distX) < viewRange &&
+					Math.abs(distY) < viewRange
+				){
+					thg.setLocation(vR + distX, vR + distY);
 				
 					System.out.println("Thing " + thg.iD + " at " + thg.tx + " " + thg.ty + "( " + thg.x + " " + thg.y + " on screen)");
-					//screen.add(thg, 5);
+					
 					screen.add(thg);
-				}
+				}//if
 			}//if
 		}//for
-		//screen.validate();
-	}
-}
-
-class Thing {
-	static int count;
-	int iD;
-//Point tLoc;
-	int tx;
-	int ty;
-//get/setLocation();
-	int x;
-	int y;
+	}//addthg
 	
-	public Thing(int a, int b) {
-		iD = count++;
-		tx = a;
-		ty = b;
+	private int wrapthg(int dist) {
+		if(Math.abs(dist) > (mS - vR)) {
+			if(dist > 0) {
+				dist -= mS;
+			} else {
+				dist += mS;
+			}
+		}
+		return dist;
 	}
 }
