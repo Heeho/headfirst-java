@@ -1,0 +1,31 @@
+Class documentation
+<---- javadoc command: ---->
+/home/plaswalro/android-studio/jre/bin/javadoc
+-author
+-version
+-nodeprecated
+-package
+-noindex
+-notree
+-nohelp
+-nonavbar
+-source
+1.8
+-classpath
+/home/plaswalro/BlueJ/lib/bluejcore.jar:/home/plaswalro/BlueJ/lib/junit-4.8.2.jar:/home/plaswalro/BlueJ/lib/userlib/pi4j-device.jar:/home/plaswalro/BlueJ/lib/userlib/pi4j-gpio-extension.jar:/home/plaswalro/BlueJ/lib/userlib/pi4j-service.jar:/home/plaswalro/BlueJ/lib/userlib/pi4j-core.jar:/home/plaswalro/hfjava/Toroid
+-d
+/home/plaswalro/hfjava/Toroid/doc
+-encoding
+UTF-8
+-charset
+UTF-8
+-docletpath
+/home/plaswalro/BlueJ/lib/bjdoclet.jar
+-doclet
+bluej.doclet.doclets.formats.html.HtmlDoclet
+/home/plaswalro/hfjava/Toroid/Walker.java
+<---- end of javadoc command ---->
+Loading source file /home/plaswalro/hfjava/Toroid/Walker.java...
+Constructing Javadoc information...
+javadoc: error - No public or protected classes found to document.
+1 error

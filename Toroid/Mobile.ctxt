@@ -1,0 +1,26 @@
+#BlueJ class context
+comment0.params=
+comment0.target=Mobile()
+comment1.params=
+comment1.target=void\ initWalker()
+comment10.params=
+comment10.target=void\ collide()
+comment11.params=thg
+comment11.target=int[]\ distance(Thing)
+comment2.params=
+comment2.target=void\ run()
+comment3.params=p
+comment3.target=void\ setDestination(int[])
+comment4.params=
+comment4.target=void\ walk()
+comment5.params=deltaA
+comment5.target=int\ calcD(int)
+comment6.params=deltaA
+comment6.target=void\ recalcD(int[])
+comment7.params=a\ b\ d
+comment7.target=int\ bresA(int,\ int,\ int)
+comment8.params=dA
+comment8.target=void\ move(int[])
+comment9.params=
+comment9.target=void\ proximity()
+numComments=12

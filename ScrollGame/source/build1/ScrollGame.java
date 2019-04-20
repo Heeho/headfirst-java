@@ -248,7 +248,7 @@ class Walker {
 						thg.setOpaque(false);
 						screen.add(thg, 5);
 						thg.setLocation(x, y);
-						screen.validate();
+//						screen.validate();
 					}
 				});
 			}

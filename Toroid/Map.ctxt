@@ -1,0 +1,8 @@
+#BlueJ class context
+comment0.params=
+comment0.target=void\ fillMap()
+comment1.params=range
+comment1.target=int[]\ randLoc(int)
+comment2.params=t
+comment2.target=void\ put(Thing)
+numComments=3
