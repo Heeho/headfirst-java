@@ -1,6 +1,0 @@
-#BlueJ class context
-comment0.params=mapXY
-comment0.target=void\ fillMap(int)
-comment1.params=area
-comment1.target=java.awt.Point\ randLoc(int)
-numComments=2
