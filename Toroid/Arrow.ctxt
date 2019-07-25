@@ -1,4 +1,10 @@
 #BlueJ class context
-comment0.params=
-comment0.target=Arrow()
-numComments=1
+comment0.params=c\ p
+comment0.target=Arrow(Living,\ int[])
+comment1.params=
+comment1.target=void\ action()
+comment2.params=thg
+comment2.target=void\ interact(Mobile)
+comment3.params=caller
+comment3.target=void\ isPickedUpBy(Thing)
+numComments=4

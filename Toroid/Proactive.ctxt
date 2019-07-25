@@ -1,0 +1,10 @@
+#BlueJ class context
+comment0.params=t
+comment0.target=void\ initProactive(java.util.Timer)
+comment1.params=
+comment1.target=void\ run()
+comment2.params=
+comment2.target=void\ action()
+comment3.params=caller\ thg
+comment3.target=boolean\ actionCondition(Mobile,\ Thing)
+numComments=4

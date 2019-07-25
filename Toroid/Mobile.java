@@ -14,26 +14,27 @@ import javax.swing.*;
 abstract class Mobile extends Thing {
     int[] destination;
     int speed = 1;
+    Timer walk;
     
-    CopyOnWriteArrayList<Thing> proximity = new CopyOnWriteArrayList<Thing>();
+    CopyOnWriteArrayList<Thing> proximity = new CopyOnWriteArrayList<Thing>();    
 
     public Mobile() {      
         destination = location;
     }
     
     public void initWalker() {
-        Timer t = new Timer();
+        walk = new Timer();
         //System.out.println("Walker initialized for " + this); 
         
-        TimerTask w = new TimerTask() {            
+        TimerTask walker = new TimerTask() {            
             public void run() {               
                 walk();
             }
         };
-        t.scheduleAtFixedRate(w, 0L, speed);
+        walk.scheduleAtFixedRate(walker, 15L, speed);
     }
     
-    public void setDestination(int[] p) {
+    public void setDest(int[] p) {
         for(int i = 0; i < dimensions; i++) {
             destination[i] = p[i];
         }
@@ -48,6 +49,10 @@ abstract class Mobile extends Thing {
 
     int err; //Breseenham's algorithm part. Set to 0 when dest changes? meh    
 
+    public void stop() {
+        setDest(location);
+    }
+    
     public void walk() {
         ////System.out.println("walk()");
         for(int i = 0; i < dimensions; i++) {
@@ -109,24 +114,24 @@ abstract class Mobile extends Thing {
                 location[i] += dA[i];
                 currentSector[i] = (int) sector[i];
                 
-                if(location[i] >= Map.sectorSize) {
+                if(location[i] >= currentMap.sectorSize) {
                     location[i] = 0;
-                    destination[i] -= Map.sectorSize;
+                    destination[i] -= currentMap.sectorSize;
                     sector[i] += 1;
                     
-                    if(sector[i] >= Map.sectors) {
+                    if(sector[i] >= currentMap.sectors) {
                         sector[i] = 0;
                     }
                     
                     shift = true;                    
                 } else {
                     if(location[i] < 0) {
-                        location[i] += Map.sectorSize;
-                        destination[i] += Map.sectorSize;
+                        location[i] += currentMap.sectorSize;
+                        destination[i] += currentMap.sectorSize;
                         sector[i] -= 1;
                         
                         if(sector[i] < 0) {
-                            sector[i] += Map.sectors;
+                            sector[i] += currentMap.sectors;
                         }
             
                         shift = true;
@@ -136,8 +141,8 @@ abstract class Mobile extends Thing {
            }
             
            if(shift) {
-                Map.thingMap.get(sector[0]).get(sector[1]).add(this);
-                Map.thingMap.get(currentSector[0]).get(currentSector[1]).remove(this);
+                currentMap.map.get(sector[0]).get(sector[1]).add(this);
+                currentMap.map.get(currentSector[0]).get(currentSector[1]).remove(this);
            }
        } else {
            isMoving = false;
@@ -159,51 +164,57 @@ abstract class Mobile extends Thing {
         
         boolean remove = true;
         
-        for(int i = 0; i < dimensions; i++) {
-            for(int j = 0; j < area; j++) {
-                value = sector[i] - 1 + j;
-                
-                if(value >= 0 && value < Map.sectors) {
-                    a[i][j] = value;
-                } else{
-                    if(value < 0) {
-                        a[i][j] = Map.sectors - 1;
-                    } else {
-                        if(value >= Map.sectors) {
-                            a[i][j] = 0;
+        if(currentMap != null) {
+            for(int i = 0; i < dimensions; i++) {
+                for(int j = 0; j < area; j++) {
+                    value = sector[i] - 1 + j;
+                    
+                    if(value >= 0 && value < currentMap.sectors) {
+                        a[i][j] = value;
+                    } else{
+                        if(value < 0) {
+                            a[i][j] = currentMap.sectors - 1;
+                        } else {
+                            if(value >= currentMap.sectors) {
+                                a[i][j] = 0;
+                            }
                         }
                     }
                 }
             }
-        }
-                
-        for(int i = 0; i < area; i++) {
-            for(int j = 0; j < area; j++) {            
-                for(Thing thg: Map.thingMap.get(a[0][i]).get(a[1][j])){
-                    if(!proximity.contains(thg)) {
-                        proximity.add(thg);
-                        //System.out.println("Thing " + thg.iD + " is in proximity");
-                    }   
-                }
-            }
-        }
-        
-        for(Thing thg: proximity) {
-            remove = true;
-            
-            outerloop:
+                    
             for(int i = 0; i < area; i++) {
-                for(int j = 0; j < area; j++) {            
-                    if(Map.thingMap.get(a[0][i]).get(a[1][j]).contains(thg)){
-                        remove = false;
-                        break outerloop;
+                for(int j = 0; j < area; j++) {
+                    if(currentMap != null) {
+                        for(Thing thg: currentMap.map.get(a[0][i]).get(a[1][j])){
+                            if(!proximity.contains(thg)) {
+                                proximity.add(thg);
+                                //if thg living?, behave()
+                                //System.out.println("Thing " + thg.iD + " is in proximity");
+                            }   
+                        }
                     }
                 }
             }
             
-            if(remove) {
-                proximity.remove(thg);
-                //System.out.println("Thing " + thg.iD + " is out of proximity");
+            for(Thing thg: proximity) {
+                remove = true;
+                
+                outerloop:
+                for(int i = 0; i < area; i++) {
+                    for(int j = 0; j < area; j++) {            
+                        if(currentMap.map.get(a[0][i]).get(a[1][j]).contains(thg)){
+                            remove = false;
+                            break outerloop;
+                        }
+                    }
+                }
+                
+                if(remove) {
+                    proximity.remove(thg);
+                    //if thg living?, behave()
+                    //System.out.println("Thing " + thg.iD + " is out of proximity");
+                }
             }
         }
     }
@@ -212,85 +223,66 @@ abstract class Mobile extends Thing {
     private void collide() {
         int collisionRange;
         
-        for(Thing thg: proximity) {
-            if(
-                thg.isObstacle
-                &&
-                !thg.equals(this)
-            ) {
-                collisionRange = (thg.size + this.size)/2;
-                deltaA = this.distance(thg);
-                
-                if(    
-                    Math.abs(deltaA[0]) <= collisionRange
+        if(isObstacle) {
+            for(Thing thg: proximity) {
+                if(
+                    thg.isObstacle
                     &&
-                    Math.abs(deltaA[1]) <= collisionRange
-                ){
-                    if(deltaA[0] > deltaA[1]) {
-                        if(Math.abs(deltaA[0]) > Math.abs(deltaA[1])) {
-                            if(dA[0] == 1) {
-                                dA[0] = 0;
+                    !thg.equals(this)
+                ) {
+                    collisionRange = (thg.size + this.size)/2;
+                    deltaA = this.distance(thg);
+                    
+                    if(    
+                        Math.abs(deltaA[0]) <= collisionRange
+                        &&
+                        Math.abs(deltaA[1]) <= collisionRange
+                    ){
+                        if(deltaA[0] > deltaA[1]) {
+                            if(Math.abs(deltaA[0]) > Math.abs(deltaA[1])) {
+                                if(dA[0] == 1) {
+                                    dA[0] = 0;
+                                }
+                            }
+                            if(Math.abs(deltaA[0]) < Math.abs(deltaA[1])) {
+                                if(dA[1] == -1) {
+                                    dA[1] = 0;
+                                }
+                            }
+                            if(Math.abs(deltaA[0]) == Math.abs(deltaA[1])) {
+                                if(dA[0] != 0) {
+                                    dA[1] = dA[0];
+                                }
+                                if(dA[1] != 0) {
+                                    dA[0] = dA[1];
+                                }
                             }
                         }
-                        if(Math.abs(deltaA[0]) < Math.abs(deltaA[1])) {
-                            if(dA[1] == -1) {
-                                dA[1] = 0;
-                            }
-                        }
-                        if(Math.abs(deltaA[0]) == Math.abs(deltaA[1])) {
-                            if(dA[0] != 0) {
+                        
+                        if(deltaA[0] < deltaA[1]) {
+                            if(Math.abs(deltaA[0]) > Math.abs(deltaA[1])) {
+                                if(dA[0] == -1) {
+                                    dA[0] = 0;
+                                }
+                            } 
+                            if(Math.abs(deltaA[0]) < Math.abs(deltaA[1])) {
+                                if(dA[1] == 1) {
+                                    dA[1] = 0;
+                                }
+                            }                    
+                            if(Math.abs(deltaA[0]) == Math.abs(deltaA[1])) {
+                                dA[0] = 1 - 2*(int) (Math.random()*2);
                                 dA[1] = dA[0];
                             }
-                            if(dA[1] != 0) {
-                                dA[0] = dA[1];
-                            }
                         }
-                    }
-                    
-                    if(deltaA[0] < deltaA[1]) {
-                        if(Math.abs(deltaA[0]) > Math.abs(deltaA[1])) {
-                            if(dA[0] == -1) {
-                                dA[0] = 0;
-                            }
-                        } 
-                        if(Math.abs(deltaA[0]) < Math.abs(deltaA[1])) {
-                            if(dA[1] == 1) {
-                                dA[1] = 0;
-                            }
-                        }                    
+                        
                         if(Math.abs(deltaA[0]) == Math.abs(deltaA[1])) {
                             dA[0] = 1 - 2*(int) (Math.random()*2);
-                            dA[1] = dA[0];
+                            dA[1] = -dA[0];
                         }
                     }
-                    
-                    if(Math.abs(deltaA[0]) == Math.abs(deltaA[1])) {
-                        dA[0] = 1 - 2*(int) (Math.random()*2);
-                        dA[1] = -dA[0];
-                    }
                 }
             }
         }
-    }
-    
-    public int[] distance(Thing thg) {
-        int[] a = new int[dimensions];
-        int secDist;
-        
-        for(int i = 0; i < dimensions; i++) {
-            secDist = thg.sector[i] - this.sector[i];
-
-            if(secDist > Map.sectors/2) {
-                secDist -= Map.sectors;
-            } else {
-                if(secDist < -Map.sectors/2) {
-                    secDist += Map.sectors;
-                }
-            }
-            
-            a[i] = thg.location[i] - this.location[i] + secDist * Map.sectorSize;
-        }
-        
-        return a;
     }
 }

@@ -28,9 +28,7 @@ class Gui {
             public void run() {
                gui();
             }
-        });
-        
-        initSeer();
+        });       
     }
     
     public void gui() {
@@ -52,6 +50,8 @@ class Gui {
         f.getContentPane().add(screen, BorderLayout.CENTER);
         
         f.setVisible(true);
+        
+        initSeer();
     }//gui
     
     public void initSeer() {
@@ -60,21 +60,27 @@ class Gui {
         Timer t = new Timer();
         TimerTask seer = new TimerTask() {
             public void run() {
-                show();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() { 
+                        show();
+                    }
+                });  
             }
         };
-        t.scheduleAtFixedRate(seer, 0L, 15);
+        t.scheduleAtFixedRate(seer, 0L, Toroid.FPS);
+    }
+    
+    public void clearView() {
+        screen.removeAll();
+        screen.validate();
+        screen.repaint();
     }
     
     public void show() {        
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() { 
-                addSprites();
-                moveSprites();
-                sortSprites();
-                remSprites();
-            }
-        });        
+        remSprites();
+        moveSprites();
+        addSprites();
+        sortSprites();   
     }
 
     //if thg is in proximity, create sprite and add it to view. ONCE. 
@@ -88,11 +94,10 @@ class Gui {
             if(!view.isEmpty()) {
                 add = true;
                 
-                outerloop:
                 for(Thing.Sprite s: view) {
                     if(thg.iD == s.iD) {
                         add = false;
-                        break outerloop;
+                        break;
                         //System.out.println("add = false");
                     }
                 }
@@ -109,23 +114,17 @@ class Gui {
                 view.add(sprite);                            
                 //System.out.println("Thing " + thg.iD + " visible, sprite is in view at " + sprite.location[0] + " " + sprite.location[1]);
 
-                sprite.setSize(screen.getPreferredSize());
+                //sprite.setSize(screen.getPreferredSize());
+                sprite.setSize(sprite.picSize, sprite.picSize);
                 sprite.setOpaque(false);
-                
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {                                                    
-                        if(sprite.className == "Tree") {
-                            screen.add(sprite, 0);
-                        } else {
-                            screen.add(sprite, 1);
-                        }                        
-                        //                         System.out.println("Thing " + thg.iD + " sprite added to screen");
-                    }
-                });
+
+                screen.add(sprite, new Integer(0));                      
+                //                         System.out.println("Thing " + thg.iD + " sprite added to screen");
             }                
         }
     }
 
+    //Convert distance to XOY centered coordinates on screen (X> Yv)
     private void convertDistA(Thing.Sprite sprite) {
         if(sprite.className == "Tree") {
             distA[0] += caller.viewRange - sprite.picSize/2;
@@ -163,23 +162,26 @@ class Gui {
     
     //sort sprites by Y on screen
     private void sortSprites() {  
-        int position = 0;
+        int position = 9999;
         
         for(Thing.Sprite sprite: view) {
-            if(sprite.className == "Tree") {
-                position = 0;                        
-            } else {
-                position = 1;
-                
-                for(Thing.Sprite anotherSprite: view) {
-                    if(sprite.getLocation().getY() + sprite.picSize/2 < anotherSprite.getLocation().getY() + anotherSprite.picSize/2) {
-                        position += 1;
+            if(sprite.className != "Tree") {
+                position--;
+                 for(Thing.Sprite anotherSprite: view) {
+                    if(sprite.getLocation().getY() + sprite.picSize < anotherSprite.getLocation().getY() + anotherSprite.picSize) {
+                        position--;
                     }
-                }                                        
-            }
+                }
+            }                                        
 
-            screen.setPosition(sprite, position);         
-        }                
+            screen.setLayer(sprite, new Integer(position));
+            
+            //             if(sprite.className == "Thug" || sprite.className == "Stone") {
+            //                 System.out.println(sprite.className + " is put to " + position + " layer");
+            //             }
+            
+            position = 9999;
+        }
     }
     
     //Calculate Sprite locations, then add those that are out of range to remList
@@ -216,9 +218,12 @@ class Gui {
                 caller.setDestination(p);
             } 
             
-            // if(!SwingUtilities.isRightMouseButton(event)) {
-            //     caller.slash();
-            // }
+            if(SwingUtilities.isLeftMouseButton(event)) {
+                //                 System.out.println("Screen tapped at " + event.getPoint());
+                int[] p = {(int) event.getPoint().getX(), (int) event.getPoint().getY()};
+                //caller.attack();
+                caller.shoot(p);
+            }
         }
     }//inner    
 }

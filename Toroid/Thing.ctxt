@@ -1,8 +1,18 @@
 #BlueJ class context
 comment0.params=
 comment0.target=Thing()
-comment1.params=
-comment1.target=Thing.Sprite\ createSprite()
+comment1.params=loc
+comment1.target=Thing(int[])
 comment2.params=
-comment2.target=java.lang.String\ className()
-numComments=3
+comment2.target=Thing.Sprite\ createSprite()
+comment3.params=
+comment3.target=java.lang.String\ className()
+comment4.params=thg
+comment4.target=int[]\ distance(Thing)
+comment5.params=p
+comment5.target=void\ setLoc(int[])
+comment6.params=p
+comment6.target=void\ setSec(int[])
+comment7.params=
+comment7.target=void\ offMap()
+numComments=8

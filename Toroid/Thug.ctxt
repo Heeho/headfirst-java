@@ -2,7 +2,7 @@
 comment0.params=
 comment0.target=Thug()
 comment1.params=
-comment1.target=void\ slash()
+comment1.target=void\ stalk()
 comment2.params=
-comment2.target=void\ stalk()
+comment2.target=void\ action()
 numComments=3
